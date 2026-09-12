@@ -98,5 +98,19 @@ export const dashboardAPI = {
   get: () => api.get('/api/dashboard'),
 };
 
+export const builderAPI = {
+  githubSummarize: (url) => api.post('/api/builder/github-summarize', { url }),
+  linkedinImport: (payload) => api.post('/api/builder/linkedin-import', payload),
+  linkedinUploadScreenshot: (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/api/builder/linkedin-upload-screenshot', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+  aiEnhanceBullet: (bullet) => api.post('/api/builder/ai-enhance-bullet', { bullet }),
+  saveResume: (payload) => api.post('/api/builder/save-resume', payload),
+};
+
 export default api;
 

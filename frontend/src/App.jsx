@@ -14,6 +14,7 @@ import Analysis from './pages/Analysis';
 import AnalysisDetail from './pages/AnalysisDetail';
 import Jobs from './pages/Jobs';
 import JobMatch from './pages/JobMatch';
+import ResumeBuilder from './pages/ResumeBuilder';
 import History from './pages/History';
 import NotFound from './pages/NotFound';
 
@@ -65,6 +66,7 @@ function LayoutShell() {
 
             {/* Protected SaaS Routes */}
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/builder" element={<ProtectedRoute><ResumeBuilder /></ProtectedRoute>} />
             <Route path="/resumes" element={<ProtectedRoute><Resumes /></ProtectedRoute>} />
             <Route path="/upload" element={<ProtectedRoute><UploadResume /></ProtectedRoute>} />
             <Route path="/analysis/:resumeId" element={<ProtectedRoute><Analysis /></ProtectedRoute>} />

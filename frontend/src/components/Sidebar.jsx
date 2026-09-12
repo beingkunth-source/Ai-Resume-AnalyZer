@@ -8,6 +8,7 @@ import {
   History,
   Briefcase,
   LogOut,
+  Wand2,
 } from 'lucide-react';
 import Button from './Button';
 
@@ -42,6 +43,15 @@ export default function Sidebar({ isOpen, onClose }) {
         </NavLink>
 
         <div className="sidebar-section-title">Resume Studio</div>
+        <NavLink
+          to="/builder"
+          className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+          onClick={onClose}
+        >
+          <Wand2 size={18} />
+          <span>AI Resume Builder</span>
+        </NavLink>
+
         <NavLink
           to="/upload"
           className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}

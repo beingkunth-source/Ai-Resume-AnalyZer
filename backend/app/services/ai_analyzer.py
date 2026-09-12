@@ -22,6 +22,13 @@ class AIServiceUnavailable(RuntimeError):
     pass
 
 
+def get_openai_client() -> OpenAI | None:
+    settings = get_settings()
+    if not settings.openai_api_key:
+        return None
+    return OpenAI(api_key=settings.openai_api_key, timeout=settings.openai_timeout_seconds)
+
+
 def _build_deterministic_fallback(text: str) -> AIAnalysis:
     """Build a rich, accurate analysis using deterministic NLP rules when OpenAI is unconfigured or unavailable."""
     lower = text.lower()

@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from app.api import analysis, auth, dashboard, jobs, resume
+from app.api import analysis, auth, builder, dashboard, jobs, resume
 from app.core.config import get_settings
 from app.database.database import init_db
 
@@ -47,3 +47,5 @@ app.include_router(resume.router)
 app.include_router(analysis.router)
 app.include_router(jobs.router)
 app.include_router(dashboard.router)
+app.include_router(builder.router)
+
