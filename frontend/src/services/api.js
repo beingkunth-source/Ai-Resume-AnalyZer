@@ -1,0 +1,102 @@
+import axios from 'axios';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  headers: { 'Content-Type': 'application/json' },
+  timeout: 45000,
+});
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+api.interceptors.response.use(
+  (response) => response.data,
+  (error) => {
+    if (!error.response) {
+      return Promise.reject({
+        message: 'Unable to connect to the server. Please check your internet connection or verify if the backend is running.',
+        status: 0,
+      });
+    }
+
+    const { status, data } = error.response;
+    let userMessage = data?.message || data?.detail;
+
+    if (status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      userMessage = userMessage || 'Your session has expired. Please log in again.';
+      if (window.location.pathname !== '/login' && window.location.pathname !== '/register' && window.location.pathname !== '/') {
+        window.location.href = '/login';
+      }
+    } else if (status === 403) {
+      userMessage = userMessage || 'You do not have permission to perform this action.';
+    } else if (status === 404) {
+      userMessage = userMessage || 'The requested resource was not found.';
+    } else if (status === 422) {
+      userMessage = userMessage || 'Please check your inputs and try again.';
+    } else if (status === 429) {
+      userMessage = userMessage || 'Too many requests. Please wait a moment and try again.';
+    } else if (status === 503) {
+      userMessage = userMessage || 'AI analysis service is temporarily unavailable. Please try again shortly.';
+    } else if (status >= 500) {
+      userMessage = userMessage || 'Something went wrong on our server. Please try again.';
+    }
+
+    return Promise.reject({
+      message: typeof userMessage === 'string' ? userMessage : 'An error occurred. Please try again.',
+      status,
+      data,
+    });
+  }
+);
+
+export const authAPI = {
+  register: (data) => api.post('/api/auth/register', data),
+  login: (data) => api.post('/api/auth/login', data),
+  me: () => api.get('/api/auth/me'),
+};
+
+export const resumeAPI = {
+  upload: (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/api/resume/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 60000,
+    });
+  },
+  list: () => api.get('/api/resume'),
+  get: (id) => api.get(`/api/resume/${id}`),
+  delete: (id) => api.delete(`/api/resume/${id}`),
+};
+
+export const analysisAPI = {
+  create: (resumeId, force = false) => api.post(`/api/analysis/${resumeId}?force=${force}`, null, { timeout: 120000 }),
+  list: () => api.get('/api/analysis'),
+  get: (id) => api.get(`/api/analysis/${id}`),
+};
+
+export const jobsAPI = {
+  create: (data) => api.post('/api/jobs', data),
+  list: () => api.get('/api/jobs'),
+  get: (id) => api.get(`/api/jobs/${id}`),
+  delete: (id) => api.delete(`/api/jobs/${id}`),
+  match: (data) => api.post('/api/jobs/match', data, { timeout: 120000 }),
+  getLive: (q = '', location = '') => api.get(`/api/jobs/live?q=${encodeURIComponent(q)}&location=${encodeURIComponent(location)}`),
+  importUrl: (url) => api.post('/api/jobs/import-url', { url }),
+};
+
+export const dashboardAPI = {
+  get: () => api.get('/api/dashboard'),
+};
+
+export default api;
+

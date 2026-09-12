@@ -1,0 +1,66 @@
+# Python & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Databases & Local Uploads
+*.db
+*.sqlite3
+backend/resume_analyzer.db
+backend/test_debug2.db
+backend/test_resume_analyzer.db
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Node / Vite / Frontend
+node_modules/
+frontend/dist/
+frontend/node_modules/
+frontend/.vite/
+frontend/.vite_cache/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.nox/
+.hypothesis/
+
+# Agent / Tooling metadata
+.agents/
+.codex/
+.DS_Store
+*.swp
+*.swo
+.vscode/
+.idea/
