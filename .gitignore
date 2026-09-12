@@ -25,6 +25,7 @@ var/
 
 # Databases & Local Uploads
 *.db
+*.db-journal
 *.sqlite3
 backend/resume_analyzer.db
 backend/test_debug2.db
