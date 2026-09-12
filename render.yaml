@@ -7,12 +7,14 @@ services:
     region: singapore
     rootDir: backend
     buildCommand: pip install -r requirements.txt
-    startCommand: alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    startCommand: export PYTHONPATH=. && alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     autoDeploy: true
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.8
+      - key: PYTHONPATH
+        value: .
       - key: DATABASE_URL
         sync: false
       - key: JWT_SECRET_KEY
