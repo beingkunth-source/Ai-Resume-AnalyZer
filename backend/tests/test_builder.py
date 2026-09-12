@@ -26,6 +26,8 @@ def test_parse_linkedin_text():
     sample_text = """
     Jane Doe
     Senior AI Engineer at Tech Corp
+    jane.doe@example.com
+    +1 555 123 4567
     San Francisco, CA
     Experience with Python, PyTorch, React, and PostgreSQL.
     """
@@ -33,6 +35,15 @@ def test_parse_linkedin_text():
     assert parsed["name"] == "Jane Doe"
     assert "headline" in parsed
     assert "skills" in parsed
+    assert parsed.get("email") == "jane.doe@example.com"
+
+
+def test_parse_linkedin_file():
+    from app.services.linkedin_service import parse_linkedin_file
+    dummy_text = "John Smith\nLead Architect\njohn@example.com\nPython, Docker, Kubernetes"
+    parsed = parse_linkedin_file(dummy_text.encode("utf-8"), "profile_export.txt")
+    assert parsed["name"] == "John Smith"
+    assert "Python" in parsed["skills"]
 
 
 def test_enhance_bullet_point():

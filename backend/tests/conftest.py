@@ -7,14 +7,14 @@ import fitz
 import pytest
 from fastapi.testclient import TestClient
 
-from app.database.database import Base, engine
+from app.database.database import Base, engine, init_db
 from app.main import app
 
 
 @pytest.fixture(autouse=True)
 def clean_database():
     Base.metadata.drop_all(bind=engine)
-    Base.metadata.create_all(bind=engine)
+    init_db()
     yield
     Base.metadata.drop_all(bind=engine)
 

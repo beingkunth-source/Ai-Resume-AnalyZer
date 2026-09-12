@@ -46,11 +46,6 @@ export default function Register() {
     <div className="auth-page">
       <div className="auth-card">
         <div style={{ textAlign: 'center', marginBottom: 20 }}>
-          <img
-            src="/hirelens-logo.png"
-            alt="HireLens"
-            style={{ maxHeight: 50, marginBottom: 12, objectFit: 'contain' }}
-          />
           <h1 style={{ fontFamily: 'Outfit', fontSize: '1.8rem', marginBottom: 6 }}>Create an Account</h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
             Start analyzing your resumes with AI in seconds.

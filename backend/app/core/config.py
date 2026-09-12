@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     app_name: str = "AI Resume Analyzer"
     environment: str = "development"
     database_url: str = "sqlite:///./resume_analyzer.db"
+    supabase_url: str | None = None
+    supabase_key: str | None = None
+    supabase_service_role_key: str | None = None
     openai_api_key: str | None = None
     openai_model: str = "gpt-4o-mini"
     openai_embedding_model: str = "text-embedding-3-small"

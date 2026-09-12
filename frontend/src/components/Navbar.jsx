@@ -18,11 +18,6 @@ export default function Navbar({ onToggleSidebar }) {
           </button>
         )}
         <Link to={user ? '/dashboard' : '/'} style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-          <img
-            src="/hirelens-logo.png"
-            alt="HireLens Logo"
-            style={{ width: 34, height: 34, objectFit: 'contain', borderRadius: 8 }}
-          />
           <span style={{ fontFamily: 'Outfit', fontWeight: 800, fontSize: '1.2rem', color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
             Hire<span style={{ color: 'var(--accent)' }}>Lens</span>
           </span>

@@ -21,11 +21,6 @@ export default function Sidebar({ isOpen, onClose }) {
   return (
     <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
       <div className="sidebar-header">
-        <img
-          src="/hirelens-logo.png"
-          alt="HireLens Logo"
-          style={{ width: 34, height: 34, objectFit: 'contain', borderRadius: 8 }}
-        />
         <div className="sidebar-logo-text" style={{ fontSize: '1.25rem' }}>
           Hire<span style={{ color: 'var(--accent)' }}>Lens</span>
         </div>

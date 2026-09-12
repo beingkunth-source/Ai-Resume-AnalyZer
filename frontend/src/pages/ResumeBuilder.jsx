@@ -19,12 +19,16 @@ import {
   CheckCircle2,
   Loader2,
   ArrowRight,
+  Camera,
+  Printer,
+  FileText,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { builderAPI, analysisAPI } from '../services/api';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import SkillBadge from '../components/SkillBadge';
+import ResumeTemplates from '../components/ResumeTemplates';
 
 const DEMO_BUILDER_DATA = {
   personalInfo: {
@@ -98,10 +102,83 @@ export default function ResumeBuilder() {
   const [importingLinkedin, setImportingLinkedin] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  // Resume template & candidate photo state
+  const [selectedTemplate, setSelectedTemplate] = useState('modern');
+  const [photoFilename, setPhotoFilename] = useState('');
+  const [photoUrl, setPhotoUrl] = useState('');
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [exportingDocx, setExportingDocx] = useState(false);
+
   // LinkedIn Modal state
   const [showLinkedinModal, setShowLinkedinModal] = useState(false);
+  const [linkedinTab, setLinkedinTab] = useState('url'); // 'url' | 'pdf' | 'text'
   const [linkedinUrl, setLinkedinUrl] = useState('');
   const [linkedinText, setLinkedinText] = useState('');
+  const [linkedinFile, setLinkedinFile] = useState(null);
+
+  // Profile photo upload handler
+  const handlePhotoChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploadingPhoto(true);
+    try {
+      const res = await builderAPI.uploadPhoto(file);
+      setPhotoFilename(res.data.photo_filename);
+      setPhotoUrl(res.data.photo_url);
+      toast.success('Candidate profile photo attached to templates!');
+    } catch (err) {
+      toast.error(err.message || 'Photo upload failed.');
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const handleRemovePhoto = () => {
+    setPhotoFilename('');
+    setPhotoUrl('');
+    toast.success('Profile photo removed.');
+  };
+
+  // DOCX Export handler
+  const handleExportDocx = async () => {
+    if (!personalInfo.name.trim()) {
+      toast.error('Please enter candidate name before exporting.');
+      return;
+    }
+    setExportingDocx(true);
+    try {
+      const payload = {
+        template_id: selectedTemplate,
+        photo_filename: photoFilename,
+        personal_info: personalInfo,
+        summary,
+        experience,
+        education,
+        projects,
+        skills,
+      };
+      const res = await builderAPI.exportDocx(payload);
+      const downloadUrl = res.data.download_url;
+
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.setAttribute('download', res.data.filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast.success(`Downloaded ${res.data.filename} (.docx)!`);
+    } catch (err) {
+      toast.error(err.message || 'Failed to export DOCX document.');
+    } finally {
+      setExportingDocx(false);
+    }
+  };
+
+  // Print PDF handler
+  const handleDownloadPdf = () => {
+    window.print();
+  };
 
   // Load sample demo data
   const handleLoadDemo = () => {
@@ -117,17 +194,29 @@ export default function ResumeBuilder() {
   // LinkedIn Import handler
   const handleLinkedinImport = async (e) => {
     e.preventDefault();
-    if (!linkedinUrl.trim() && !linkedinText.trim()) {
-      toast.error('Please enter a LinkedIn profile URL or paste profile text.');
-      return;
-    }
     setImportingLinkedin(true);
     try {
-      const res = await builderAPI.linkedinImport({ url: linkedinUrl.trim(), text: linkedinText.trim() });
+      let res;
+      if (linkedinTab === 'file' && linkedinFile) {
+        res = await builderAPI.linkedinUploadFile(linkedinFile);
+      } else if (linkedinTab === 'url' && linkedinUrl.trim()) {
+        res = await builderAPI.linkedinImport({ url: linkedinUrl.trim() });
+      } else if (linkedinText.trim()) {
+        res = await builderAPI.linkedinImport({ text: linkedinText.trim() });
+      } else {
+        toast.error('Please enter a LinkedIn profile URL, upload a PDF export, or paste text.');
+        setImportingLinkedin(false);
+        return;
+      }
+
       const data = res.data;
 
       if (data.name) setPersonalInfo((prev) => ({ ...prev, name: data.name }));
       if (data.headline) setPersonalInfo((prev) => ({ ...prev, headline: data.headline }));
+      if (data.email) setPersonalInfo((prev) => ({ ...prev, email: data.email }));
+      if (data.phone) setPersonalInfo((prev) => ({ ...prev, phone: data.phone }));
+      if (data.location) setPersonalInfo((prev) => ({ ...prev, location: data.location }));
+      if (data.linkedin) setPersonalInfo((prev) => ({ ...prev, linkedin: data.linkedin }));
       if (data.summary) setSummary(data.summary);
       if (data.skills?.length > 0) setSkills((prev) => Array.from(new Set([...prev, ...data.skills])));
 
@@ -152,10 +241,22 @@ export default function ResumeBuilder() {
         setEducation(parsedEdu);
       }
 
-      toast.success('LinkedIn profile imported successfully!');
+      if (data.projects?.length > 0) {
+        const parsedProj = data.projects.map((p, idx) => ({
+          id: `proj-imported-${idx}`,
+          name: p.name || 'Project',
+          url: p.url || '',
+          techStack: p.tech_stack || [],
+          keyPoints: p.key_points || (p.description ? [p.description] : []),
+        }));
+        setProjects(parsedProj);
+      }
+
+      toast.success('LinkedIn details extracted successfully!');
       setShowLinkedinModal(false);
       setLinkedinUrl('');
       setLinkedinText('');
+      setLinkedinFile(null);
     } catch (err) {
       toast.error(err.message || 'LinkedIn import failed.');
     } finally {
@@ -361,6 +462,9 @@ export default function ResumeBuilder() {
         </div>
       </div>
 
+      {/* ===== TEMPLATE SELECTION GALLERY ===== */}
+      <ResumeTemplates selectedTemplate={selectedTemplate} onSelectTemplate={setSelectedTemplate} />
+
       {/* ===== STEP TABS HEADER ===== */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 28, overflowX: 'auto', paddingBottom: 6 }}>
         {steps.map((s) => {
@@ -389,6 +493,49 @@ export default function ResumeBuilder() {
           {activeStep === 1 && (
             <Card>
               <h3 style={{ fontSize: '1.1rem', marginBottom: 16 }}>Personal & Contact Details</h3>
+
+              {/* CANDIDATE PROFILE PHOTO UPLOAD WIDGET */}
+              <div style={{ marginBottom: 20, padding: 14, background: 'var(--bg-subtle)', borderRadius: 8, border: '1px dashed var(--border)' }}>
+                <label className="form-label" style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <Camera size={16} /> Candidate Profile Photo (Optional for Resume Templates)
+                </label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                  {photoUrl ? (
+                    <div style={{ position: 'relative' }}>
+                      <img src={photoUrl} alt="Candidate Profile" style={{ width: 60, height: 60, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--accent)' }} />
+                      <button
+                        type="button"
+                        onClick={handleRemovePhoto}
+                        style={{ position: 'absolute', top: -4, right: -4, background: 'var(--danger)', color: '#fff', border: 'none', borderRadius: '50%', width: 20, height: 20, cursor: 'pointer', fontSize: '0.7rem' }}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ) : (
+                    <div style={{ width: 60, height: 60, borderRadius: '50%', background: 'var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
+                      <Camera size={24} />
+                    </div>
+                  )}
+
+                  <div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      id="photo-upload-input"
+                      style={{ display: 'none' }}
+                      onChange={handlePhotoChange}
+                    />
+                    <label htmlFor="photo-upload-input">
+                      <Button type="button" variant="secondary" size="sm" icon={Upload} loading={uploadingPhoto} onClick={() => document.getElementById('photo-upload-input').click()}>
+                        {photoUrl ? 'Change Photo' : 'Upload Candidate Photo'}
+                      </Button>
+                    </label>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 4 }}>
+                      JPG, PNG, or WEBP. Appears on resume templates and exported DOCX/PDF documents.
+                    </div>
+                  </div>
+                </div>
+              </div>
               <div className="form-group">
                 <label className="form-label">Full Name *</label>
                 <input
@@ -824,96 +971,136 @@ export default function ResumeBuilder() {
           )}
         </div>
 
-        {/* RIGHT COLUMN: LIVE FORMATTED ATS RESUME PREVIEW */}
+        {/* RIGHT COLUMN: LIVE FORMATTED RESUME PREVIEW WITH TEMPLATE STYLING */}
         <div>
           <Card style={{ background: 'var(--bg-white)', borderColor: 'var(--border)', sticky: 'top', top: 80 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, paddingBottom: 12, borderBottom: '1px solid var(--border)' }}>
-              <div style={{ fontWeight: 700, fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: 6, color: 'var(--accent)' }}>
-                <FileCheck size={18} /> Live ATS Resume Preview
+              <div style={{ fontWeight: 700, fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: 6, color: selectedTemplate === 'creative' ? '#4F46E5' : 'var(--accent)' }}>
+                <FileCheck size={18} /> Live Template Preview
               </div>
-              <span className="tag green" style={{ fontSize: '0.75rem' }}>
-                ATS Formatted
+              <span className="tag green" style={{ fontSize: '0.75rem', textTransform: 'capitalize' }}>
+                {selectedTemplate} Template
               </span>
             </div>
 
             <div
+              id="printable-resume-preview"
               style={{
-                fontFamily: 'monospace, sans-serif',
-                fontSize: '0.825rem',
+                fontFamily: selectedTemplate === 'classic' ? 'Georgia, serif' : 'Outfit, sans-serif',
+                fontSize: '0.85rem',
                 lineHeight: 1.5,
                 color: 'var(--text-primary)',
-                background: 'var(--bg-subtle)',
-                padding: 18,
+                background: 'var(--bg-white)',
+                padding: 24,
                 borderRadius: 8,
-                maxHeight: 520,
+                border: '1px solid var(--border)',
+                maxHeight: 540,
                 overflowY: 'auto',
-                whiteSpace: 'pre-wrap',
-                wordBreak: 'break-word',
+                boxShadow: 'var(--shadow-sm)',
               }}
             >
-              <div style={{ fontWeight: 800, fontSize: '1.05rem', color: 'var(--text-primary)', textAlign: 'center' }}>
-                {personalInfo.name.toUpperCase() || 'YOUR NAME'}
-              </div>
-              <div style={{ textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.78rem', marginBottom: 12 }}>
-                {[personalInfo.email, personalInfo.phone, personalInfo.location].filter(Boolean).join(' | ')}
+              {/* HEADER WITH PHOTO & CONTACT */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16, paddingBottom: 14, borderBottom: `2px solid ${selectedTemplate === 'creative' ? '#4F46E5' : selectedTemplate === 'minimal' ? '#18181B' : '#059669'}` }}>
+                {photoUrl && (
+                  <img
+                    src={photoUrl}
+                    alt="Candidate Avatar"
+                    style={{ width: 64, height: 64, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--accent)' }}
+                  />
+                )}
+                <div>
+                  <div style={{ fontWeight: 800, fontSize: '1.25rem', color: selectedTemplate === 'creative' ? '#4F46E5' : selectedTemplate === 'minimal' ? '#18181B' : '#059669', letterSpacing: '-0.02em' }}>
+                    {personalInfo.name.toUpperCase() || 'YOUR NAME'}
+                  </div>
+                  {personalInfo.headline && (
+                    <div style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--text-secondary)' }}>
+                      {personalInfo.headline}
+                    </div>
+                  )}
+                  <div style={{ color: 'var(--text-muted)', fontSize: '0.78rem', marginTop: 4 }}>
+                    {[personalInfo.email, personalInfo.phone, personalInfo.location, personalInfo.linkedin, personalInfo.github].filter(Boolean).join(' | ')}
+                  </div>
+                </div>
               </div>
 
               {summary && (
-                <>
-                  <div style={{ fontWeight: 700, color: 'var(--accent)', marginTop: 12 }}>SUMMARY</div>
-                  <div style={{ color: 'var(--text-secondary)' }}>{summary}</div>
-                </>
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ fontWeight: 700, color: selectedTemplate === 'creative' ? '#4F46E5' : selectedTemplate === 'minimal' ? '#18181B' : '#059669', fontSize: '0.85rem', textTransform: 'uppercase', marginBottom: 4 }}>
+                    Professional Summary
+                  </div>
+                  <div style={{ color: 'var(--text-secondary)', fontSize: '0.825rem' }}>{summary}</div>
+                </div>
               )}
 
               {experience.length > 0 && (
-                <>
-                  <div style={{ fontWeight: 700, color: 'var(--accent)', marginTop: 14 }}>EXPERIENCE</div>
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ fontWeight: 700, color: selectedTemplate === 'creative' ? '#4F46E5' : selectedTemplate === 'minimal' ? '#18181B' : '#059669', fontSize: '0.85rem', textTransform: 'uppercase', marginBottom: 6 }}>
+                    Work Experience
+                  </div>
                   {experience.map((e, i) => (
                     <div key={i} style={{ marginBottom: 8 }}>
-                      <div style={{ fontWeight: 700 }}>{e.title} - {e.company} ({e.dates})</div>
-                      <div style={{ color: 'var(--text-secondary)', whiteSpace: 'pre-wrap' }}>{e.description}</div>
+                      <div style={{ fontWeight: 700, fontSize: '0.85rem' }}>
+                        {e.title} <span style={{ fontWeight: 500, color: 'var(--text-muted)' }}>at {e.company} ({e.dates})</span>
+                      </div>
+                      <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', whiteSpace: 'pre-wrap', paddingLeft: 8 }}>{e.description}</div>
                     </div>
                   ))}
-                </>
+                </div>
               )}
 
               {projects.length > 0 && (
-                <>
-                  <div style={{ fontWeight: 700, color: 'var(--purple)', marginTop: 14 }}>PROJECTS</div>
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ fontWeight: 700, color: selectedTemplate === 'creative' ? '#4F46E5' : selectedTemplate === 'minimal' ? '#18181B' : '#059669', fontSize: '0.85rem', textTransform: 'uppercase', marginBottom: 6 }}>
+                    Key Projects
+                  </div>
                   {projects.map((p, i) => (
                     <div key={i} style={{ marginBottom: 8 }}>
-                      <div style={{ fontWeight: 700 }}>{p.name} {p.techStack?.length > 0 ? `[${p.techStack.join(', ')}]` : ''}</div>
-                      <div style={{ color: 'var(--text-secondary)' }}>{(p.keyPoints || []).map((kp) => `• ${kp}`).join('\n')}</div>
+                      <div style={{ fontWeight: 700, fontSize: '0.85rem' }}>
+                        {p.name} {p.techStack?.length > 0 ? <span style={{ color: selectedTemplate === 'creative' ? '#4F46E5' : '#059669', fontSize: '0.78rem' }}>[{p.techStack.join(', ')}]</span> : ''}
+                      </div>
+                      <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', paddingLeft: 8 }}>
+                        {(p.keyPoints || []).map((kp) => `• ${kp}`).join('\n')}
+                      </div>
                     </div>
                   ))}
-                </>
+                </div>
               )}
 
               {education.length > 0 && (
-                <>
-                  <div style={{ fontWeight: 700, color: 'var(--accent)', marginTop: 14 }}>EDUCATION</div>
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ fontWeight: 700, color: selectedTemplate === 'creative' ? '#4F46E5' : selectedTemplate === 'minimal' ? '#18181B' : '#059669', fontSize: '0.85rem', textTransform: 'uppercase', marginBottom: 4 }}>
+                    Education
+                  </div>
                   {education.map((e, i) => (
-                    <div key={i}>
-                      {e.degree}, {e.institution} ({e.dates})
+                    <div key={i} style={{ fontSize: '0.825rem', color: 'var(--text-secondary)' }}>
+                      <strong>{e.degree}</strong>, {e.institution} ({e.dates})
                     </div>
                   ))}
-                </>
+                </div>
               )}
 
               {skills.length > 0 && (
-                <>
-                  <div style={{ fontWeight: 700, color: 'var(--accent)', marginTop: 14 }}>SKILLS</div>
-                  <div style={{ color: 'var(--text-secondary)' }}>{skills.join(', ')}</div>
-                </>
+                <div>
+                  <div style={{ fontWeight: 700, color: selectedTemplate === 'creative' ? '#4F46E5' : selectedTemplate === 'minimal' ? '#18181B' : '#059669', fontSize: '0.85rem', textTransform: 'uppercase', marginBottom: 4 }}>
+                    Technical Skills
+                  </div>
+                  <div style={{ color: 'var(--text-secondary)', fontSize: '0.825rem' }}>{skills.join(', ')}</div>
+                </div>
               )}
             </div>
 
             <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <Button variant="primary" fullWidth icon={Sparkles} loading={saving} onClick={handleSaveAndAnalyze}>
-                Save & Analyze Resume
-              </Button>
-              <Button variant="secondary" fullWidth icon={Download} onClick={handleDownloadTxt}>
-                Download Text File
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <Button variant="primary" icon={Download} loading={exportingDocx} onClick={handleExportDocx}>
+                  Export Word (.docx)
+                </Button>
+                <Button variant="secondary" icon={Printer} onClick={handleDownloadPdf}>
+                  Download PDF
+                </Button>
+              </div>
+
+              <Button variant="outline" fullWidth icon={Sparkles} loading={saving} onClick={handleSaveAndAnalyze}>
+                Save & Analyze with AI
               </Button>
             </div>
           </Card>
@@ -930,39 +1117,93 @@ export default function ResumeBuilder() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              style={{ textAlign: 'left', maxWidth: 520 }}
+              style={{ textAlign: 'left', maxWidth: 540 }}
             >
-              <h3 style={{ fontSize: '1.2rem', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Linkedin size={22} className="text-accent" /> Import LinkedIn Profile
+              <h3 style={{ fontSize: '1.25rem', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Linkedin size={24} className="text-accent" /> Import LinkedIn Profile
               </h3>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: 20 }}>
-                Paste your public LinkedIn profile link or raw profile text to auto-fill builder fields.
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: 16 }}>
+                Extract 100% of your LinkedIn profile details into structured ATS builder fields.
               </p>
 
+              {/* MODAL METHOD TABS */}
+              <div style={{ display: 'flex', gap: 6, marginBottom: 18, borderBottom: '1px solid var(--border)', paddingBottom: 10 }}>
+                <button
+                  type="button"
+                  className={`btn ${linkedinTab === 'url' ? 'btn-primary' : 'btn-secondary'}`}
+                  style={{ padding: '6px 12px', fontSize: '0.8rem' }}
+                  onClick={() => setLinkedinTab('url')}
+                >
+                  Profile Link
+                </button>
+                <button
+                  type="button"
+                  className={`btn ${linkedinTab === 'file' ? 'btn-primary' : 'btn-secondary'}`}
+                  style={{ padding: '6px 12px', fontSize: '0.8rem' }}
+                  onClick={() => setLinkedinTab('file')}
+                >
+                  Upload PDF Export / Photo
+                </button>
+                <button
+                  type="button"
+                  className={`btn ${linkedinTab === 'text' ? 'btn-primary' : 'btn-secondary'}`}
+                  style={{ padding: '6px 12px', fontSize: '0.8rem' }}
+                  onClick={() => setLinkedinTab('text')}
+                >
+                  Paste Text
+                </button>
+              </div>
+
+              {/* PRO TIP ALERT */}
+              <div style={{ background: '#ECFDF5', border: '1px solid #A7F3D0', borderRadius: 8, padding: '10px 14px', marginBottom: 18, fontSize: '0.8rem', color: '#047857' }}>
+                💡 <strong>Pro Tip for 100% Detail:</strong> Open your LinkedIn Profile page &rarr; Click <strong>More</strong> &rarr; Select <strong>Save to PDF</strong>, then upload the PDF here for perfect extraction of all work experiences & achievements!
+              </div>
+
               <form onSubmit={handleLinkedinImport}>
-                <div className="form-group">
-                  <label className="form-label">LinkedIn Profile URL</label>
-                  <input
-                    type="url"
-                    className="form-input"
-                    placeholder="https://linkedin.com/in/yourname"
-                    value={linkedinUrl}
-                    onChange={(e) => setLinkedinUrl(e.target.value)}
-                  />
-                </div>
+                {linkedinTab === 'url' && (
+                  <div className="form-group">
+                    <label className="form-label">LinkedIn Profile URL</label>
+                    <input
+                      type="url"
+                      className="form-input"
+                      placeholder="https://linkedin.com/in/yourname"
+                      value={linkedinUrl}
+                      onChange={(e) => setLinkedinUrl(e.target.value)}
+                    />
+                  </div>
+                )}
 
-                <div className="form-group">
-                  <label className="form-label">OR Paste Raw LinkedIn Profile Text</label>
-                  <textarea
-                    className="form-textarea"
-                    rows={4}
-                    placeholder="Paste Experience, About, and Skills sections copied from LinkedIn..."
-                    value={linkedinText}
-                    onChange={(e) => setLinkedinText(e.target.value)}
-                  />
-                </div>
+                {linkedinTab === 'file' && (
+                  <div className="form-group">
+                    <label className="form-label">Upload LinkedIn PDF Export or Image Screenshot</label>
+                    <input
+                      type="file"
+                      accept=".pdf,.png,.jpg,.jpeg,.webp"
+                      className="form-input"
+                      onChange={(e) => setLinkedinFile(e.target.files[0] || null)}
+                    />
+                    {linkedinFile && (
+                      <div style={{ fontSize: '0.8rem', color: 'var(--accent)', marginTop: 6, fontWeight: 600 }}>
+                        ✓ File selected: {linkedinFile.name}
+                      </div>
+                    )}
+                  </div>
+                )}
 
-                <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+                {linkedinTab === 'text' && (
+                  <div className="form-group">
+                    <label className="form-label">Paste Raw LinkedIn Profile Text</label>
+                    <textarea
+                      className="form-textarea"
+                      rows={5}
+                      placeholder="Copy and paste Experience, Education, About, and Skills sections from LinkedIn..."
+                      value={linkedinText}
+                      onChange={(e) => setLinkedinText(e.target.value)}
+                    />
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 20 }}>
                   <Button type="button" variant="secondary" onClick={() => setShowLinkedinModal(false)}>
                     Cancel
                   </Button>

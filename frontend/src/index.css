@@ -766,3 +766,25 @@ a:hover {
     grid-template-columns: 1fr;
   }
 }
+
+/* ===== PRINT STYLING FOR RESUME PDF EXPORT ===== */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #printable-resume-preview, #printable-resume-preview * {
+    visibility: visible;
+  }
+  #printable-resume-preview {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 20px;
+    background: #ffffff !important;
+    color: #18181b !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+}

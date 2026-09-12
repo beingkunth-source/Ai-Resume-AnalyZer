@@ -101,6 +101,13 @@ export const dashboardAPI = {
 export const builderAPI = {
   githubSummarize: (url) => api.post('/api/builder/github-summarize', { url }),
   linkedinImport: (payload) => api.post('/api/builder/linkedin-import', payload),
+  linkedinUploadFile: (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/api/builder/linkedin-upload-file', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
   linkedinUploadScreenshot: (file) => {
     const formData = new FormData();
     formData.append('file', file);
@@ -110,6 +117,14 @@ export const builderAPI = {
   },
   aiEnhanceBullet: (bullet) => api.post('/api/builder/ai-enhance-bullet', { bullet }),
   saveResume: (payload) => api.post('/api/builder/save-resume', payload),
+  uploadPhoto: (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/api/builder/upload-photo', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+  exportDocx: (payload) => api.post('/api/builder/export-docx', payload),
 };
 
 export default api;

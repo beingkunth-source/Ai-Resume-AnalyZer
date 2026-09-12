@@ -41,11 +41,6 @@ export default function Login() {
     <div className="auth-page">
       <div className="auth-card">
         <div style={{ textAlign: 'center', marginBottom: 20 }}>
-          <img
-            src="/hirelens-logo.png"
-            alt="HireLens"
-            style={{ maxHeight: 50, marginBottom: 12, objectFit: 'contain' }}
-          />
           <h1 style={{ fontFamily: 'Outfit', fontSize: '1.8rem', marginBottom: 6 }}>Welcome Back</h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
             Sign in to access your resume analyses and job matches.

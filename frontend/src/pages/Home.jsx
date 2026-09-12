@@ -24,25 +24,7 @@ export default function Home() {
       {/* ===== HERO SECTION WITH HIRE LENS WALLPAPER LOGO ===== */}
       <section style={{ padding: '40px 24px 60px', maxWidth: '100%', margin: '0', textAlign: 'left' }}>
         
-        {/* CENTERED HERO HEADER FLEX CONTAINER MATCHING USER SCREENSHOT */}
         <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start', flexWrap: 'wrap', gap: 20, marginBottom: 28 }}>
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.6 }}
-          >
-            <img
-              src="/hirelens-logo.png"
-              alt="HireLens - Analyze, Improve, Get Hired"
-              style={{
-                maxHeight: 140,
-                maxWidth: '90vw',
-                objectFit: 'contain',
-                filter: 'drop-shadow(0 10px 25px rgba(5, 150, 105, 0.14))',
-              }}
-            />
-          </motion.div>
-
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -258,11 +240,6 @@ export default function Home() {
       {/* ===== CTA SECTION WITH OAUTH EASY LOGIN ===== */}
       <section style={{ padding: '80px 24px', textAlign: 'center' }}>
         <div style={{ maxWidth: 800, margin: '0 auto', background: 'var(--bg-white)', border: '1px solid var(--border)', borderRadius: 'var(--radius-xl)', padding: 48, boxShadow: 'var(--shadow-lg)' }}>
-          <img
-            src="/hirelens-logo.png"
-            alt="HireLens"
-            style={{ maxHeight: 75, marginBottom: 20, objectFit: 'contain' }}
-          />
           <h2 style={{ fontSize: '2rem', marginBottom: 16 }}>Ready to Upgrade Your Resume?</h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', marginBottom: 28 }}>
             Get your instant ATS score and tailored recommendations in less than 30 seconds.
