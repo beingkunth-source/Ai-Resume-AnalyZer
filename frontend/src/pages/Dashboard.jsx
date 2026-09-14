@@ -61,29 +61,8 @@ export default function Dashboard() {
           </div>
           <h1 className="text-3xl font-extrabold text-slate-900">Good morning, {firstName}</h1>
           <p className="text-slate-500 text-sm">
-            Your AI career profile is <strong className="text-emerald-600">{profileScore}% complete</strong>. Explore job matches & resume tools below.
+            Welcome to your AI Career Hub. Explore job matches & resume tools below.
           </p>
-        </div>
-
-        {/* Profile Ring CTA */}
-        <div
-          onClick={() => navigate('/profile')}
-          className="flex items-center space-x-4 bg-slate-50 border border-slate-200 p-4 rounded-2xl cursor-pointer hover:border-emerald-300 transition-all"
-        >
-          <div className="relative w-14 h-14 flex items-center justify-center">
-            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-              <path className="text-slate-200" strokeWidth="3.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-              <path className="text-emerald-500" strokeDasharray={`${profileScore}, 100`} strokeWidth="3.5" strokeLinecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-            </svg>
-            <span className="absolute text-xs font-extrabold text-slate-900">{profileScore}%</span>
-          </div>
-          <div>
-            <div className="text-xs font-bold text-slate-900 uppercase">Complete Profile</div>
-            <p className="text-xs text-emerald-600 font-semibold flex items-center space-x-1">
-              <span>View Checklist</span>
-              <ArrowRightIcon className="w-3.5 h-3.5" />
-            </p>
-          </div>
         </div>
       </div>
 
