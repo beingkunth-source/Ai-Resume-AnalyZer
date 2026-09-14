@@ -49,25 +49,43 @@ def generate_pdf_resume(resume_data: dict[str, Any], template_id: str = "modern"
     linkedin = resume_data.get("linkedin") or (resume_data.get("personal_info") or {}).get("linkedin_url") or ""
     github = resume_data.get("github") or (resume_data.get("personal_info") or {}).get("github_url") or ""
 
-    # Name
-    page.insert_text((margin_x, current_y), name, fontsize=20, fontname="helv", fontfile=None, color=rgb_primary)
-    current_y += 24
+    # Header Variations based on template_id
+    if template_id in ("modern", "executive"):
+        header_rect = fitz.Rect(0, 0, 595, 95)
+        page.draw_rect(header_rect, color=rgb_primary, fill=rgb_primary)
+        
+        page.insert_text((margin_x, 38), name.upper(), fontsize=20, fontname="helv", color=(1.0, 1.0, 1.0))
+        if headline:
+            page.insert_text((margin_x, 56), headline, fontsize=10.5, fontname="helv", color=(0.95, 0.97, 1.0))
+        
+        contact_parts = [p for p in [email, phone, location, linkedin, github] if p]
+        if contact_parts:
+            contact_str = "  •  ".join(contact_parts)
+            page.insert_text((margin_x, 74), contact_str[:110], fontsize=8.5, fontname="helv", color=(0.9, 0.93, 0.98))
+        current_y = 115
+    else:
+        if template_id == "minimal":
+            page.draw_line(fitz.Point(32, 40), fitz.Point(32, 800), color=rgb_primary, width=4.0)
 
-    # Headline
-    if headline:
-        page.insert_text((margin_x, current_y), headline, fontsize=11, fontname="helv", color=rgb_dark)
+        # Name
+        page.insert_text((margin_x, current_y), name, fontsize=20, fontname="helv", color=rgb_primary)
+        current_y += 24
+
+        # Headline
+        if headline:
+            page.insert_text((margin_x, current_y), headline, fontsize=11, fontname="helv", color=rgb_dark)
+            current_y += 16
+
+        # Contact line
+        contact_parts = [p for p in [email, phone, location, linkedin, github] if p]
+        if contact_parts:
+            contact_str = "  •  ".join(contact_parts)
+            page.insert_text((margin_x, current_y), contact_str[:110], fontsize=8.5, fontname="helv", color=rgb_gray)
+            current_y += 18
+
+        # Accent Divider Line
+        page.draw_line(fitz.Point(margin_x, current_y), fitz.Point(margin_x + max_width, current_y), color=rgb_primary, width=1.5)
         current_y += 16
-
-    # Contact line
-    contact_parts = [p for p in [email, phone, location, linkedin, github] if p]
-    if contact_parts:
-        contact_str = "  •  ".join(contact_parts)
-        page.insert_text((margin_x, current_y), contact_str[:110], fontsize=8.5, fontname="helv", color=rgb_gray)
-        current_y += 18
-
-    # Accent Divider Line
-    page.draw_line(fitz.Point(margin_x, current_y), fitz.Point(margin_x + max_width, current_y), color=rgb_primary, width=1.5)
-    current_y += 16
 
     def add_section_header(title: str):
         nonlocal current_y

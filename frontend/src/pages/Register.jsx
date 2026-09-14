@@ -4,7 +4,6 @@ import { useAuth } from '../context/AuthContext';
 import { UserPlus, Eye, EyeOff, Sparkles, CheckCircle2, ShieldCheck, Zap, Mail, Lock, User } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Button from '../components/Button';
-import OAuthButtons from '../components/OAuthButtons';
 
 export default function Register() {
   const [name, setName] = useState('');
@@ -184,9 +183,6 @@ export default function Register() {
               Create Account
             </Button>
           </form>
-
-          {/* OAUTH SOCIAL BUTTONS */}
-          <OAuthButtons onSuccess={() => navigate('/dashboard')} />
 
           <div className="auth-footer" style={{ marginTop: 24, fontSize: '0.875rem' }}>
             Already have an account?{' '}

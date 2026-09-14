@@ -156,6 +156,553 @@ function TemplateMiniPreview({ id, accentColor = '#059669' }) {
   );
 }
 
+function ResumeDocumentPreview({ resumeData, selectedTemplate = 'classic', accentColor = '#059669', pageSize = 'A4' }) {
+  if (!resumeData) return null;
+
+  const name = resumeData.name || resumeData.personal_info?.name || 'Your Name';
+  const headline = resumeData.headline || resumeData.personal_info?.headline || '';
+  const email = resumeData.email || resumeData.personal_info?.email || '';
+  const phone = resumeData.phone || resumeData.personal_info?.phone || '';
+  const location = resumeData.location || resumeData.personal_info?.location || '';
+  const linkedin = resumeData.linkedin || resumeData.personal_info?.linkedin_url || '';
+  const github = resumeData.github || resumeData.personal_info?.github_url || '';
+
+  const skillsList = Array.isArray(resumeData.skills)
+    ? resumeData.skills
+    : Array.isArray(resumeData.technical_skills)
+    ? resumeData.technical_skills
+    : typeof resumeData.skills === 'string'
+    ? resumeData.skills.split(',').map((s) => s.trim())
+    : [];
+
+  const experience = resumeData.experience || [];
+  const projects = resumeData.projects || [];
+  const education = resumeData.education || [];
+
+  const contactBadges = [
+    email && { text: email, icon: '✉️' },
+    phone && { text: phone, icon: '📞' },
+    location && { text: location, icon: '📍' },
+    linkedin && { text: 'LinkedIn', icon: '🔗' },
+    github && { text: 'GitHub', icon: '💻' },
+  ].filter(Boolean);
+
+  // Layout 1: MODERN
+  if (selectedTemplate === 'modern') {
+    return (
+      <div className="bg-white rounded-2xl border border-slate-300 shadow-lg min-h-[680px] overflow-hidden text-slate-800 animate-fade-in">
+        <div className="p-8 text-white space-y-2 shadow-inner" style={{ backgroundColor: accentColor }}>
+          <h1 className="text-3xl font-black tracking-tight uppercase">{name}</h1>
+          {headline && <p className="text-sm font-semibold opacity-90">{headline}</p>}
+          <div className="flex flex-wrap gap-2 pt-2 text-[11px] font-medium opacity-85">
+            {contactBadges.map((c, i) => (
+              <span key={i} className="px-2 py-0.5 bg-white/20 rounded-md backdrop-blur-sm">
+                {c.text}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="p-8 space-y-6">
+          {resumeData.summary && (
+            <div className="space-y-1.5">
+              <h3 className="text-xs font-extrabold uppercase tracking-wider border-b pb-1" style={{ color: accentColor, borderColor: accentColor + '40' }}>
+                Professional Summary
+              </h3>
+              <p className="text-xs text-slate-700 leading-relaxed">{resumeData.summary}</p>
+            </div>
+          )}
+
+          {skillsList.length > 0 && (
+            <div className="space-y-2">
+              <h3 className="text-xs font-extrabold uppercase tracking-wider border-b pb-1" style={{ color: accentColor, borderColor: accentColor + '40' }}>
+                Skills & Core Competencies
+              </h3>
+              <div className="flex flex-wrap gap-1.5">
+                {skillsList.map((sk, idx) => (
+                  <span key={idx} className="px-2.5 py-1 bg-slate-100 border border-slate-200 rounded-lg text-xs font-semibold text-slate-800">
+                    {sk}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {experience.length > 0 && (
+            <div className="space-y-4">
+              <h3 className="text-xs font-extrabold uppercase tracking-wider border-b pb-1" style={{ color: accentColor, borderColor: accentColor + '40' }}>
+                Professional Experience
+              </h3>
+              {experience.map((exp, idx) => (
+                <div key={idx} className="space-y-1 text-xs">
+                  <div className="flex justify-between font-bold text-slate-900">
+                    <span>{exp.title || exp.role}</span>
+                    <span className="text-[11px] text-slate-500 font-normal">{exp.dates || exp.duration}</span>
+                  </div>
+                  <div className="font-semibold text-[11px]" style={{ color: accentColor }}>
+                    {exp.company} {exp.location ? `• ${exp.location}` : ''}
+                  </div>
+                  {Array.isArray(exp.bullets) && (
+                    <ul className="list-disc list-inside space-y-0.5 text-slate-700 text-[11px] pt-0.5">
+                      {exp.bullets.map((b, bi) => (
+                        <li key={bi}>{b}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {projects.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-xs font-extrabold uppercase tracking-wider border-b pb-1" style={{ color: accentColor, borderColor: accentColor + '40' }}>
+                Technical Projects
+              </h3>
+              {projects.map((proj, idx) => (
+                <div key={idx} className="space-y-1 text-xs">
+                  <div className="font-bold text-slate-900">{proj.title || proj.name}</div>
+                  {proj.technologies && (
+                    <div className="text-[10px] text-slate-500 font-medium">
+                      Tech: {Array.isArray(proj.technologies) ? proj.technologies.join(', ') : proj.technologies}
+                    </div>
+                  )}
+                  {Array.isArray(proj.bullets) && (
+                    <ul className="list-disc list-inside space-y-0.5 text-slate-700 text-[11px]">
+                      {proj.bullets.map((b, bi) => (
+                        <li key={bi}>{b}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {education.length > 0 && (
+            <div className="space-y-2">
+              <h3 className="text-xs font-extrabold uppercase tracking-wider border-b pb-1" style={{ color: accentColor, borderColor: accentColor + '40' }}>
+                Education & Qualifications
+              </h3>
+              {education.map((edu, idx) => (
+                <div key={idx} className="flex justify-between text-xs font-semibold">
+                  <div>
+                    <span className="text-slate-900">{edu.degree}</span>
+                    <span className="text-slate-500 font-normal"> — {edu.institution}</span>
+                  </div>
+                  <span className="text-slate-400 font-normal">{edu.year}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Layout 2: MINIMAL
+  if (selectedTemplate === 'minimal') {
+    return (
+      <div className="bg-white rounded-2xl border border-slate-300 p-8 shadow-lg min-h-[680px] text-slate-800 space-y-6 animate-fade-in">
+        <div className="space-y-1 pb-4 border-b border-slate-200">
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight">{name}</h1>
+          {headline && <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">{headline}</p>}
+          <div className="text-[11px] text-slate-500 flex flex-wrap gap-3 pt-1 font-mono">
+            {email && <span>{email}</span>}
+            {phone && <span>• {phone}</span>}
+            {location && <span>• {location}</span>}
+            {linkedin && <span>• linkedin.com</span>}
+            {github && <span>• github.com</span>}
+          </div>
+        </div>
+
+        <div className="border-l-4 pl-6 space-y-6" style={{ borderColor: accentColor }}>
+          {resumeData.summary && (
+            <div className="space-y-1">
+              <p className="text-xs text-slate-700 leading-relaxed italic">{resumeData.summary}</p>
+            </div>
+          )}
+
+          {skillsList.length > 0 && (
+            <div className="space-y-1.5">
+              <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Skills & Frameworks</h3>
+              <div className="flex flex-wrap gap-1 text-[11px]">
+                {skillsList.map((sk, idx) => (
+                  <span key={idx} className="px-2 py-0.5 bg-slate-100 rounded text-slate-700 font-mono">
+                    {sk}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {experience.length > 0 && (
+            <div className="space-y-4">
+              <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Experience</h3>
+              {experience.map((exp, idx) => (
+                <div key={idx} className="space-y-1 text-xs">
+                  <div className="flex justify-between font-bold text-slate-900">
+                    <span>{exp.title || exp.role} <span className="font-semibold" style={{ color: accentColor }}>@ {exp.company}</span></span>
+                    <span className="text-[10px] text-slate-400 font-mono">{exp.dates || exp.duration}</span>
+                  </div>
+                  {Array.isArray(exp.bullets) && (
+                    <ul className="space-y-1 text-slate-600 text-[11px] pt-1">
+                      {exp.bullets.map((b, bi) => (
+                        <li key={bi} className="flex items-start space-x-2">
+                          <span style={{ color: accentColor }}>—</span>
+                          <span>{b}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {projects.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Projects</h3>
+              {projects.map((proj, idx) => (
+                <div key={idx} className="space-y-1 text-xs">
+                  <div className="font-bold text-slate-900">{proj.title || proj.name}</div>
+                  {Array.isArray(proj.bullets) && (
+                    <ul className="space-y-1 text-slate-600 text-[11px]">
+                      {proj.bullets.map((b, bi) => (
+                        <li key={bi} className="flex items-start space-x-2">
+                          <span style={{ color: accentColor }}>—</span>
+                          <span>{b}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {education.length > 0 && (
+            <div className="space-y-2">
+              <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900">Education</h3>
+              {education.map((edu, idx) => (
+                <div key={idx} className="text-xs text-slate-700 flex justify-between">
+                  <span><strong>{edu.degree}</strong>, {edu.institution}</span>
+                  <span className="text-slate-400 font-mono text-[10px]">{edu.year}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Layout 3: TECH (2 Column Sidebar)
+  if (selectedTemplate === 'tech') {
+    return (
+      <div className="bg-white rounded-2xl border border-slate-300 shadow-lg min-h-[680px] grid grid-cols-12 overflow-hidden text-slate-800 animate-fade-in">
+        <div className="col-span-4 bg-slate-900 text-white p-6 space-y-6 flex flex-col justify-between">
+          <div className="space-y-5">
+            <div className="space-y-1 border-b border-slate-800 pb-4">
+              <h1 className="text-xl font-extrabold tracking-tight text-white">{name}</h1>
+              {headline && <p className="text-xs font-semibold text-emerald-400">{headline}</p>}
+            </div>
+
+            <div className="space-y-1.5 text-[11px] text-slate-300 font-mono">
+              <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Contact & Profiles</div>
+              {email && <div className="truncate">{email}</div>}
+              {phone && <div>{phone}</div>}
+              {location && <div>{location}</div>}
+              {github && <div className="text-emerald-400">GitHub Verified</div>}
+            </div>
+
+            {skillsList.length > 0 && (
+              <div className="space-y-2">
+                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tech Stack</div>
+                <div className="flex flex-wrap gap-1">
+                  {skillsList.map((sk, idx) => (
+                    <span key={idx} className="px-2 py-0.5 bg-slate-800 text-emerald-300 border border-slate-700 rounded text-[10px] font-medium">
+                      {sk}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {education.length > 0 && (
+              <div className="space-y-2 border-t border-slate-800 pt-3">
+                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Education</div>
+                {education.map((edu, idx) => (
+                  <div key={idx} className="text-[11px] text-slate-300">
+                    <div className="font-bold text-white">{edu.degree}</div>
+                    <div className="text-[10px] text-slate-400">{edu.institution} ({edu.year})</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="col-span-8 p-6 space-y-5 bg-white">
+          {resumeData.summary && (
+            <div className="space-y-1">
+              <h3 className="text-xs font-bold uppercase tracking-wider" style={{ color: accentColor }}>
+                System Architecture & Summary
+              </h3>
+              <p className="text-xs text-slate-700 leading-relaxed">{resumeData.summary}</p>
+            </div>
+          )}
+
+          {projects.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider pb-1 border-b border-slate-100" style={{ color: accentColor }}>
+                Key Technical Projects & Architecture
+              </h3>
+              {projects.map((proj, idx) => (
+                <div key={idx} className="space-y-1 text-xs bg-slate-50 p-3 rounded-xl border border-slate-200">
+                  <div className="font-bold text-slate-900">{proj.title || proj.name}</div>
+                  {proj.technologies && (
+                    <div className="text-[10px] font-mono text-emerald-700 font-semibold">
+                      [{Array.isArray(proj.technologies) ? proj.technologies.join(', ') : proj.technologies}]
+                    </div>
+                  )}
+                  {Array.isArray(proj.bullets) && (
+                    <ul className="list-disc list-inside space-y-0.5 text-slate-700 text-[11px] pt-1">
+                      {proj.bullets.map((b, bi) => (
+                        <li key={bi}>{b}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {experience.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider pb-1 border-b border-slate-100" style={{ color: accentColor }}>
+                Engineering Experience
+              </h3>
+              {experience.map((exp, idx) => (
+                <div key={idx} className="space-y-1 text-xs">
+                  <div className="flex justify-between font-bold text-slate-900">
+                    <span>{exp.title || exp.role} <span className="text-slate-500 font-semibold">@ {exp.company}</span></span>
+                    <span className="text-[10px] text-slate-400">{exp.dates || exp.duration}</span>
+                  </div>
+                  {Array.isArray(exp.bullets) && (
+                    <ul className="list-disc list-inside space-y-0.5 text-slate-700 text-[11px]">
+                      {exp.bullets.map((b, bi) => (
+                        <li key={bi}>{b}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Layout 4: EXECUTIVE
+  if (selectedTemplate === 'executive') {
+    return (
+      <div className="bg-white rounded-2xl border border-slate-300 p-8 shadow-lg min-h-[680px] text-slate-800 space-y-6 animate-fade-in">
+        <div className="p-6 rounded-xl border-y-4 space-y-2 text-center" style={{ borderColor: accentColor, backgroundColor: '#FAF9F6' }}>
+          <h1 className="text-3xl font-serif font-bold text-slate-900 tracking-wide">{name}</h1>
+          {headline && <p className="text-xs font-bold uppercase tracking-widest text-slate-600">{headline}</p>}
+          <div className="flex items-center justify-center gap-3 text-[11px] text-slate-500 pt-1">
+            {email && <span>{email}</span>}
+            {phone && <span>• {phone}</span>}
+            {location && <span>• {location}</span>}
+          </div>
+        </div>
+
+        {resumeData.summary && (
+          <div className="space-y-2">
+            <div className="px-3 py-1 text-xs font-bold uppercase tracking-widest text-white rounded text-center" style={{ backgroundColor: accentColor }}>
+              Executive Profile
+            </div>
+            <p className="text-xs text-slate-800 leading-relaxed font-serif text-justify p-2 bg-slate-50 rounded border border-slate-200">
+              {resumeData.summary}
+            </p>
+          </div>
+        )}
+
+        {skillsList.length > 0 && (
+          <div className="space-y-2">
+            <h3 className="text-xs font-serif font-bold uppercase tracking-wider border-b-2 pb-1" style={{ borderColor: accentColor, color: accentColor }}>
+              Core Leadership Competencies
+            </h3>
+            <div className="grid grid-cols-3 gap-2 text-xs font-semibold text-slate-800">
+              {skillsList.map((sk, idx) => (
+                <div key={idx} className="p-2 bg-slate-100/70 border border-slate-200 rounded text-center text-[11px]">
+                  {sk}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {experience.length > 0 && (
+          <div className="space-y-4">
+            <h3 className="text-xs font-serif font-bold uppercase tracking-wider border-b-2 pb-1" style={{ borderColor: accentColor, color: accentColor }}>
+              Leadership & Executive Career
+            </h3>
+            {experience.map((exp, idx) => (
+              <div key={idx} className="space-y-1 text-xs">
+                <div className="flex justify-between font-bold text-slate-900 font-serif">
+                  <span className="text-sm">{exp.title || exp.role}</span>
+                  <span className="text-[11px] text-slate-500 font-sans">{exp.dates || exp.duration}</span>
+                </div>
+                <div className="font-semibold text-slate-700 text-xs">{exp.company}</div>
+                {Array.isArray(exp.bullets) && (
+                  <ul className="list-disc list-inside space-y-1 text-slate-700 text-[11px] pt-1">
+                    {exp.bullets.map((b, bi) => (
+                      <li key={bi}>{b}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {education.length > 0 && (
+          <div className="space-y-2">
+            <h3 className="text-xs font-serif font-bold uppercase tracking-wider border-b-2 pb-1" style={{ borderColor: accentColor, color: accentColor }}>
+              Education & Advanced Credentials
+            </h3>
+            {education.map((edu, idx) => (
+              <div key={idx} className="flex justify-between text-xs font-semibold text-slate-800">
+                <span>{edu.degree} — {edu.institution}</span>
+                <span className="text-slate-500">{edu.year}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Layout 5: CREATIVE / PROFESSIONAL / CLASSIC / ATS-FRIENDLY (Standard versatile layout)
+  return (
+    <div className="bg-white rounded-2xl border border-slate-300 p-8 shadow-lg min-h-[680px] text-slate-800 space-y-6 animate-fade-in">
+      <div className={`pb-4 border-b space-y-1 ${selectedTemplate === 'classic' ? 'text-center' : ''}`} style={{ borderColor: accentColor }}>
+        <h1 className="text-2xl font-extrabold tracking-tight" style={{ color: accentColor }}>
+          {name}
+        </h1>
+        {headline && <div className="text-sm font-semibold text-slate-600">{headline}</div>}
+        <div className={`text-[11px] text-slate-500 flex flex-wrap gap-2 pt-1 ${selectedTemplate === 'classic' ? 'justify-center' : ''}`}>
+          {contactBadges.map((c, i) => (
+            <span key={i}>
+              {i > 0 ? '• ' : ''}{c.text}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {resumeData.summary && (
+        <div className="space-y-1">
+          <h3 className="text-xs font-bold uppercase tracking-wider" style={{ color: accentColor }}>
+            Professional Summary
+          </h3>
+          <p className="text-xs text-slate-700 leading-relaxed">{resumeData.summary}</p>
+        </div>
+      )}
+
+      {skillsList.length > 0 && (
+        <div className="space-y-1.5">
+          <h3 className="text-xs font-bold uppercase tracking-wider" style={{ color: accentColor }}>
+            Technical Skills & Core Competencies
+          </h3>
+          <div className="flex flex-wrap gap-1.5 text-xs text-slate-800 font-medium">
+            {skillsList.map((sk, i) => (
+              <span key={i} className="px-2 py-0.5 bg-slate-100 border border-slate-200 rounded text-[11px] font-semibold text-slate-700">
+                {sk}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {experience.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="text-xs font-bold uppercase tracking-wider border-b border-slate-100 pb-0.5" style={{ color: accentColor }}>
+            Work Experience
+          </h3>
+          {experience.map((exp, idx) => (
+            <div key={idx} className="text-xs space-y-1">
+              <div className="flex justify-between font-bold text-slate-900">
+                <span>{exp.title || exp.role}</span>
+                <span className="text-[10px] text-slate-500">{exp.dates || exp.duration}</span>
+              </div>
+              <div className="font-semibold text-[11px]" style={{ color: accentColor }}>
+                {exp.company} {exp.location ? `• ${exp.location}` : ''}
+              </div>
+              {Array.isArray(exp.bullets) && exp.bullets.length > 0 ? (
+                <ul className="list-disc list-inside space-y-0.5 text-slate-700 text-[11px]">
+                  {exp.bullets.map((b, bi) => (
+                    <li key={bi} className="leading-snug">{b}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-slate-700 text-[11px] leading-snug">{exp.description}</p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {projects.length > 0 && (
+        <div className="space-y-3 pt-1">
+          <h3 className="text-xs font-bold uppercase tracking-wider border-b border-slate-100 pb-0.5" style={{ color: accentColor }}>
+            Technical Projects
+          </h3>
+          {projects.map((proj, idx) => (
+            <div key={idx} className="text-xs space-y-1">
+              <div className="flex items-center justify-between font-bold text-slate-900">
+                <span>{proj.title || proj.name}</span>
+                {proj.role && <span className="text-[10px] text-slate-500">{proj.role}</span>}
+              </div>
+              {proj.technologies && (
+                <div className="text-[10px] font-semibold text-slate-500">
+                  Tech: {Array.isArray(proj.technologies) ? proj.technologies.join(', ') : proj.technologies}
+                </div>
+              )}
+              {Array.isArray(proj.bullets) && (
+                <ul className="list-disc list-inside space-y-0.5 text-slate-700 text-[11px]">
+                  {proj.bullets.map((b, bi) => (
+                    <li key={bi} className="leading-snug">{b}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {education.length > 0 && (
+        <div className="space-y-2 pt-1">
+          <h3 className="text-xs font-bold uppercase tracking-wider border-b border-slate-100 pb-0.5" style={{ color: accentColor }}>
+            Education & Credentials
+          </h3>
+          {education.map((edu, idx) => (
+            <div key={idx} className="text-xs space-y-0.5">
+              <div className="flex justify-between font-bold text-slate-900">
+                <span>{edu.degree} {edu.field ? `in ${edu.field}` : ''}</span>
+                <span className="text-[10px] text-slate-500">{edu.year}</span>
+              </div>
+              <div className="text-[11px] text-slate-600 font-semibold">{edu.institution}</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ResumeGenerator() {
   const [activeStep, setActiveStep] = useState(1); // 1: Goal, 2: Template, 3: Editor & Preview
   const [goal, setGoal] = useState('General Resume');
@@ -592,9 +1139,24 @@ export default function ResumeGenerator() {
           <div className="lg:col-span-7 space-y-6">
             {/* Customization Toolbar */}
             <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center space-x-2 text-xs font-semibold text-slate-700">
+                <span>Template Layout:</span>
+                <select
+                  value={selectedTemplate}
+                  onChange={(e) => setSelectedTemplate(e.target.value)}
+                  className="px-3 py-1.5 rounded-xl border border-emerald-400 bg-emerald-50 text-emerald-900 font-bold outline-none cursor-pointer hover:bg-emerald-100 transition-all"
+                >
+                  {TEMPLATES.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name} {t.ats ? ' (ATS Friendly)' : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <div className="flex items-center space-x-3 text-xs font-semibold text-slate-700">
                 <span>Accent Color:</span>
-                {['#059669', '#2563EB', '#7C3AED', '#DC2626', '#09090B'].map((clr) => (
+                {['#059669', '#2563EB', '#7C3AED', '#DC2626', '#09090B', '#D97706', '#0891B2'].map((clr) => (
                   <button
                     key={clr}
                     onClick={() => setAccentColor(clr)}
@@ -611,7 +1173,7 @@ export default function ResumeGenerator() {
                 <select
                   value={pageSize}
                   onChange={(e) => setPageSize(e.target.value)}
-                  className="px-3 py-1 rounded-lg border border-slate-300 bg-white"
+                  className="px-3 py-1 rounded-lg border border-slate-300 bg-white text-xs font-medium"
                 >
                   <option value="A4">A4 Standard</option>
                   <option value="Letter">US Letter</option>
@@ -810,170 +1372,12 @@ export default function ResumeGenerator() {
             </div>
 
             {/* Live Paper Preview Card */}
-            <div className="bg-white rounded-2xl border border-slate-300 p-8 shadow-lg min-h-[650px] text-slate-800 space-y-5">
-              {/* Personal Info Header */}
-              <div
-                className="pb-4 border-b space-y-1"
-                style={{ borderColor: accentColor }}
-              >
-                <h2 className="text-2xl font-bold" style={{ color: accentColor }}>
-                  {resumeData.name || resumeData.personal_info?.name}
-                </h2>
-                <div className="text-sm font-semibold text-slate-600">
-                  {resumeData.headline || resumeData.personal_info?.headline}
-                </div>
-                <div className="text-[11px] text-slate-500 flex flex-wrap gap-2 pt-1">
-                  {(resumeData.email || resumeData.personal_info?.email) && <span>{resumeData.email || resumeData.personal_info?.email}</span>}
-                  {(resumeData.phone || resumeData.personal_info?.phone) && <span>• {resumeData.phone || resumeData.personal_info?.phone}</span>}
-                  {(resumeData.location || resumeData.personal_info?.location) && <span>• {resumeData.location || resumeData.personal_info?.location}</span>}
-                  {(resumeData.linkedin || resumeData.personal_info?.linkedin_url) && <span>• LinkedIn</span>}
-                  {(resumeData.github || resumeData.personal_info?.github_url) && <span>• GitHub</span>}
-                </div>
-              </div>
-
-              {/* Summary */}
-              {resumeData.summary && (
-                <div className="space-y-1">
-                  <div
-                    className="text-xs font-bold uppercase tracking-wider"
-                    style={{ color: accentColor }}
-                  >
-                    Professional Summary
-                  </div>
-                  <p className="text-xs text-slate-700 leading-relaxed">{resumeData.summary}</p>
-                </div>
-              )}
-
-              {/* Technical & Soft Skills */}
-              {(resumeData.skills?.length > 0 || resumeData.technical_skills?.length > 0) && (
-                <div className="space-y-1.5">
-                  <div
-                    className="text-xs font-bold uppercase tracking-wider"
-                    style={{ color: accentColor }}
-                  >
-                    Technical Skills & Core Competencies
-                  </div>
-                  <div className="flex flex-wrap gap-1.5 text-xs text-slate-800 font-medium">
-                    {(Array.isArray(resumeData.skills)
-                      ? resumeData.skills
-                      : Array.isArray(resumeData.technical_skills)
-                      ? resumeData.technical_skills
-                      : [resumeData.skills]
-                    ).map((sk, i) => (
-                      <span key={i} className="px-2 py-0.5 bg-slate-100 border border-slate-200 rounded text-[11px] font-semibold text-slate-700">
-                        {sk}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Work Experience */}
-              {resumeData.experience?.length > 0 && (
-                <div className="space-y-3">
-                  <div
-                    className="text-xs font-bold uppercase tracking-wider border-b border-slate-100 pb-0.5"
-                    style={{ color: accentColor }}
-                  >
-                    Work Experience
-                  </div>
-                  {resumeData.experience.map((exp, idx) => (
-                    <div key={idx} className="text-xs space-y-1">
-                      <div className="flex justify-between font-bold text-slate-900">
-                        <span>{exp.title || exp.role}</span>
-                        <span className="text-[10px] text-slate-500">{exp.dates || exp.duration}</span>
-                      </div>
-                      <div className="font-semibold text-emerald-700 text-[11px]">{exp.company} {exp.location ? `• ${exp.location}` : ''}</div>
-                      {Array.isArray(exp.bullets) && exp.bullets.length > 0 ? (
-                        <ul className="list-disc list-inside space-y-0.5 text-slate-700 text-[11px]">
-                          {exp.bullets.map((b, bi) => (
-                            <li key={bi} className="leading-snug">{b}</li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="text-slate-700 text-[11px] leading-snug">{exp.description}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Technical Projects */}
-              {resumeData.projects?.length > 0 && (
-                <div className="space-y-3 pt-1">
-                  <div
-                    className="text-xs font-bold uppercase tracking-wider border-b border-slate-100 pb-0.5"
-                    style={{ color: accentColor }}
-                  >
-                    Technical Projects
-                  </div>
-                  {resumeData.projects.map((proj, idx) => (
-                    <div key={idx} className="text-xs space-y-1">
-                      <div className="flex items-center justify-between font-bold text-slate-900">
-                        <span>{proj.title || proj.name}</span>
-                        {proj.role && <span className="text-[10px] text-slate-500">{proj.role}</span>}
-                      </div>
-                      {proj.technologies?.length > 0 && (
-                        <div className="text-[10px] font-semibold text-slate-500">
-                          Tech: {Array.isArray(proj.technologies) ? proj.technologies.join(', ') : proj.technologies}
-                        </div>
-                      )}
-                      {Array.isArray(proj.bullets) && proj.bullets.length > 0 ? (
-                        <ul className="list-disc list-inside space-y-0.5 text-slate-700 text-[11px]">
-                          {proj.bullets.map((b, bi) => (
-                            <li key={bi} className="leading-snug">{b}</li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="text-slate-700 text-[11px] leading-snug">{proj.description}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Education */}
-              {resumeData.education?.length > 0 && (
-                <div className="space-y-2 pt-1">
-                  <div
-                    className="text-xs font-bold uppercase tracking-wider border-b border-slate-100 pb-0.5"
-                    style={{ color: accentColor }}
-                  >
-                    Education & Credentials
-                  </div>
-                  {resumeData.education.map((edu, idx) => (
-                    <div key={idx} className="text-xs space-y-0.5">
-                      <div className="flex justify-between font-bold text-slate-900">
-                        <span>{edu.degree} {edu.field ? `in ${edu.field}` : ''}</span>
-                        <span className="text-[10px] text-slate-500">{edu.year}</span>
-                      </div>
-                      <div className="text-[11px] text-slate-600 font-semibold">{edu.institution}</div>
-                      {edu.coursework && <div className="text-[10px] text-slate-500">Coursework: {edu.coursework}</div>}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Certifications & Achievements */}
-              {(resumeData.certifications?.length > 0 || resumeData.achievements?.length > 0) && (
-                <div className="space-y-2 pt-1">
-                  <div
-                    className="text-xs font-bold uppercase tracking-wider border-b border-slate-100 pb-0.5"
-                    style={{ color: accentColor }}
-                  >
-                    Certifications & Key Achievements
-                  </div>
-                  <ul className="list-disc list-inside space-y-0.5 text-slate-700 text-[11px]">
-                    {resumeData.certifications?.map((cert, ci) => (
-                      <li key={`c_${ci}`}>{cert}</li>
-                    ))}
-                    {resumeData.achievements?.map((ach, ai) => (
-                      <li key={`a_${ai}`}>{ach}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
+            <ResumeDocumentPreview
+              resumeData={resumeData}
+              selectedTemplate={selectedTemplate}
+              accentColor={accentColor}
+              pageSize={pageSize}
+            />
           </div>
         </div>
       )}
