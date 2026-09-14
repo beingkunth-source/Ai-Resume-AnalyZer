@@ -236,23 +236,6 @@ export default function Home() {
 
       {/* ===== FREQUENTLY ASKED QUESTIONS ===== */}
       <FAQSection />
-
-      {/* ===== CTA SECTION WITH OAUTH EASY LOGIN ===== */}
-      <section style={{ padding: '80px 24px', textAlign: 'center' }}>
-        <div style={{ maxWidth: 800, margin: '0 auto', background: 'var(--bg-white)', border: '1px solid var(--border)', borderRadius: 'var(--radius-xl)', padding: 48, boxShadow: 'var(--shadow-lg)' }}>
-          <h2 style={{ fontSize: '2rem', marginBottom: 16 }}>Ready to Upgrade Your Resume?</h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', marginBottom: 28 }}>
-            Get your instant ATS score and tailored recommendations in less than 30 seconds.
-          </p>
-          <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link to={user ? '/upload' : '/register'}>
-              <Button size="lg" variant="primary" icon={Sparkles}>
-                Start Free Analysis
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }
