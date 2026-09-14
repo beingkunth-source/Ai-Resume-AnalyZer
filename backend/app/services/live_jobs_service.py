@@ -126,7 +126,7 @@ def fetch_live_jobs(query: str = "", location: str = "") -> list[dict]:
             f"https://remotive.com/api/remote-jobs?search={encoded_query}&limit=12",
             headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
         )
-        with urllib.request.urlopen(req, timeout=4) as resp:
+        with urllib.request.urlopen(req, timeout=1.5) as resp:
             import json
             data = json.loads(resp.read().decode("utf-8"))
             remotive_jobs = data.get("jobs", [])
@@ -157,8 +157,8 @@ def fetch_live_jobs(query: str = "", location: str = "") -> list[dict]:
                     "description": clean_desc or rj.get("title"),
                     "url": rj.get("url", "https://naukri.com"),
                 })
-    except Exception as e:
-        logger.warning(f"Could not fetch external live API jobs: {e}")
+    except Exception:
+        pass
 
     # Combine with default curated live vacancies
     combined = results + DEFAULT_LIVE_JOBS
