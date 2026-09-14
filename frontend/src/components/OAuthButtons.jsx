@@ -31,11 +31,11 @@ export default function OAuthButtons({ onSuccess }) {
     }
   };
 
-  const handleSupabaseOAuth = async (provider) => {
+  const handleSupabaseOAuth = async (provider = 'Google') => {
     setLoadingProvider(provider);
     try {
       const { error } = await supabase.auth.signInWithOAuth({
-        provider: provider === 'Google' ? 'google' : 'linkedin_oidc',
+        provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/dashboard`,
         },
@@ -43,7 +43,7 @@ export default function OAuthButtons({ onSuccess }) {
       if (error) throw error;
     } catch (err) {
       // Fallback to seamless demo auth if Supabase OAuth provider credentials aren't toggled yet
-      await handleOAuthLogin(provider, `${provider} Professional`, `user_${Math.floor(Math.random() * 10000)}@${provider.toLowerCase()}.com`);
+      await handleOAuthLogin('Google', 'Google User', `user_${Math.floor(Math.random() * 10000)}@gmail.com`);
     } finally {
       setLoadingProvider(null);
     }
@@ -60,12 +60,11 @@ export default function OAuthButtons({ onSuccess }) {
         <div style={{ flex: 1, borderBottom: '1px solid #e2e8f0' }} />
       </div>
 
-      {/* Side-by-side Compact OAuth Buttons */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-        {/* GOOGLE BUTTON */}
+      {/* Full Width Google OAuth Button */}
+      <div style={{ width: '100%' }}>
         <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.99 }}
           type="button"
           disabled={!!loadingProvider}
           onClick={() => handleSupabaseOAuth('Google')}
@@ -73,12 +72,13 @@ export default function OAuthButtons({ onSuccess }) {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: 8,
-            padding: '9px 12px',
+            gap: 10,
+            width: '100%',
+            padding: '11px 16px',
             background: '#ffffff',
             border: '1px solid #cbd5e1',
             borderRadius: '10px',
-            fontSize: '0.825rem',
+            fontSize: '0.875rem',
             fontWeight: 600,
             color: '#334155',
             cursor: 'pointer',
@@ -86,7 +86,7 @@ export default function OAuthButtons({ onSuccess }) {
             transition: 'all 0.2s ease',
           }}
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" style={{ flexShrink: 0 }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" style={{ flexShrink: 0 }}>
             <path
               fill="#4285F4"
               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -104,37 +104,7 @@ export default function OAuthButtons({ onSuccess }) {
               d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
             />
           </svg>
-          <span>{loadingProvider === 'Google' ? 'Google...' : 'Google'}</span>
-        </motion.button>
-
-        {/* LINKEDIN BUTTON */}
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          type="button"
-          disabled={!!loadingProvider}
-          onClick={() => handleSupabaseOAuth('LinkedIn')}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 8,
-            padding: '9px 12px',
-            background: '#0a66c2',
-            border: 'none',
-            borderRadius: '10px',
-            fontSize: '0.825rem',
-            fontWeight: 600,
-            color: '#ffffff',
-            cursor: 'pointer',
-            boxShadow: '0 1px 3px rgba(10, 102, 194, 0.2)',
-            transition: 'all 0.2s ease',
-          }}
-        >
-          <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24" style={{ flexShrink: 0 }}>
-            <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 10.9v8.37H9.25V10.9H6.46M7.86 6.7a1.63 1.63 0 1 0 0 3.26 1.63 1.63 0 0 0 0-3.26Z" />
-          </svg>
-          <span>{loadingProvider === 'LinkedIn' ? 'LinkedIn...' : 'LinkedIn'}</span>
+          <span>{loadingProvider === 'Google' ? 'Signing in with Google...' : 'Continue with Google'}</span>
         </motion.button>
       </div>
     </div>
