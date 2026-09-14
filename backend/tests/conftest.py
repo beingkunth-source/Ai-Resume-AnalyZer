@@ -1,22 +1,46 @@
 import os
+import uuid
 
-os.environ.setdefault("DATABASE_URL", "sqlite:///./test_resume_analyzer.db")
-os.environ.setdefault("JWT_SECRET_KEY", "test-only-secret")
+os.environ["DATABASE_URL"] = "sqlite:///:memory:"
+os.environ["JWT_SECRET_KEY"] = "test-only-secret"
+
+from app.core.config import get_settings
+get_settings.cache_clear()
 
 import fitz
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 
-from app.database.database import Base, engine, init_db
+from app.database.database import Base, get_db
 from app.main import app
+
+test_engine = create_engine(
+    "sqlite:///:memory:",
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool,
+)
+TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
+
+
+def override_get_db():
+    db = TestingSessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+app.dependency_overrides[get_db] = override_get_db
 
 
 @pytest.fixture(autouse=True)
 def clean_database():
-    Base.metadata.drop_all(bind=engine)
-    init_db()
+    Base.metadata.create_all(bind=test_engine)
     yield
-    Base.metadata.drop_all(bind=engine)
+    Base.metadata.drop_all(bind=test_engine)
 
 
 @pytest.fixture
@@ -29,6 +53,7 @@ def auth_header(client, email="jane@example.com"):
     response = client.post("/api/auth/register", json={"name": "Jane Doe", "email": email, "password": "secure-password-123"})
     assert response.status_code == 201, response.text
     return {"Authorization": "Bearer " + response.json()["data"]["access_token"]}
+
 
 
 def pdf_bytes(text=None):
@@ -67,3 +92,4 @@ def pdf_bytes(text=None):
 
 def upload_resume(client, headers, text=None):
     return client.post("/api/resume/upload", headers=headers, files={"file": ("my_resume.pdf", pdf_bytes(text), "application/pdf")})
+
