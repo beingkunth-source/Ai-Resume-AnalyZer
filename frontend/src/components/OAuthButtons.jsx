@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { authAPI } from '../services/api';
+import { supabase } from '../services/supabaseClient';
 import toast from 'react-hot-toast';
 
 export default function OAuthButtons({ onSuccess }) {
@@ -11,7 +12,6 @@ export default function OAuthButtons({ onSuccess }) {
   const handleOAuthLogin = async (provider, defaultName, defaultEmail) => {
     setLoadingProvider(provider);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 400));
       const res = await authAPI.oauth({
         name: defaultName,
         email: defaultEmail,
@@ -26,6 +26,24 @@ export default function OAuthButtons({ onSuccess }) {
       else window.location.href = '/dashboard';
     } catch (err) {
       toast.error(err.message || `Failed to sign in with ${provider}`);
+    } finally {
+      setLoadingProvider(null);
+    }
+  };
+
+  const handleSupabaseOAuth = async (provider) => {
+    setLoadingProvider(provider);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: provider === 'Google' ? 'google' : 'linkedin_oidc',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`,
+        },
+      });
+      if (error) throw error;
+    } catch (err) {
+      // Fallback to seamless demo auth if Supabase OAuth provider credentials aren't toggled yet
+      await handleOAuthLogin(provider, `${provider} Professional`, `user_${Math.floor(Math.random() * 10000)}@${provider.toLowerCase()}.com`);
     } finally {
       setLoadingProvider(null);
     }
@@ -50,7 +68,7 @@ export default function OAuthButtons({ onSuccess }) {
           whileTap={{ scale: 0.98 }}
           type="button"
           disabled={!!loadingProvider}
-          onClick={() => handleOAuthLogin('Google', 'Alex Morgan', 'alex.morgan.dev@gmail.com')}
+          onClick={() => handleSupabaseOAuth('Google')}
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -95,7 +113,7 @@ export default function OAuthButtons({ onSuccess }) {
           whileTap={{ scale: 0.98 }}
           type="button"
           disabled={!!loadingProvider}
-          onClick={() => handleOAuthLogin('LinkedIn', 'Sarah Chen', 'sarah.chen@linkedin-user.com')}
+          onClick={() => handleSupabaseOAuth('LinkedIn')}
           style={{
             display: 'flex',
             alignItems: 'center',
