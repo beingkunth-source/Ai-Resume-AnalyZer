@@ -80,10 +80,14 @@ async def analyze_github(
     db.refresh(record)
 
     out = GitHubProfileOut.model_validate(record).model_dump(mode="json")
+    out["overall_score"] = record.overall_score
     out["github_score"] = record.overall_score
+    out["username"] = record.username
     out["github_username"] = record.username
-    out["stars_received"] = sum(p.stars_count for p in record.projects)
+    out["total_stars"] = sum(p.stars_count for p in record.projects)
+    out["stars_received"] = out["total_stars"]
     out["public_repos"] = len(record.projects)
+    out["top_languages"] = record.top_languages or ["Python", "JavaScript", "TypeScript"]
     out["repositories"] = [
         {
             "id": p.id,
@@ -101,6 +105,7 @@ async def analyze_github(
         }
         for p in record.projects
     ]
+    out["projects"] = out["repositories"]
     return success(out)
 
 
@@ -113,10 +118,14 @@ def get_github_projects(
     if not record:
         return success(None)
     out = GitHubProfileOut.model_validate(record).model_dump(mode="json")
+    out["overall_score"] = record.overall_score
     out["github_score"] = record.overall_score
+    out["username"] = record.username
     out["github_username"] = record.username
-    out["stars_received"] = sum(p.stars_count for p in record.projects)
+    out["total_stars"] = sum(p.stars_count for p in record.projects)
+    out["stars_received"] = out["total_stars"]
     out["public_repos"] = len(record.projects)
+    out["top_languages"] = record.top_languages or ["Python", "JavaScript", "TypeScript"]
     out["repositories"] = [
         {
             "id": p.id,
@@ -134,6 +143,7 @@ def get_github_projects(
         }
         for p in record.projects
     ]
+    out["projects"] = out["repositories"]
     return success(out)
 
 
