@@ -12,6 +12,10 @@ export default function OAuthButtons({ onSuccess }) {
   const handleOAuthLogin = async (provider, defaultName, defaultEmail) => {
     setLoadingProvider(provider);
     try {
+      // Clear any stale local sessions (e.g. Alex Morgan demo session)
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+
       const res = await authAPI.oauth({
         name: defaultName,
         email: defaultEmail,
@@ -21,7 +25,7 @@ export default function OAuthButtons({ onSuccess }) {
       const user = res.data.user;
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
-      toast.success(`Successfully signed in with ${provider}!`);
+      toast.success(`Successfully signed in as ${user.name}!`);
       if (onSuccess) onSuccess();
       else window.location.href = '/dashboard';
     } catch (err) {
@@ -34,6 +38,10 @@ export default function OAuthButtons({ onSuccess }) {
   const handleSupabaseOAuth = async (provider = 'Google') => {
     setLoadingProvider(provider);
     try {
+      // Clear stale sessions before starting OAuth flow
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -42,8 +50,9 @@ export default function OAuthButtons({ onSuccess }) {
       });
       if (error) throw error;
     } catch (err) {
-      // Fallback to seamless demo auth if Supabase OAuth provider credentials aren't toggled yet
-      await handleOAuthLogin('Google', 'Google User', `user_${Math.floor(Math.random() * 10000)}@gmail.com`);
+      // If Supabase Google OAuth provider is not yet configured in Supabase console, fallback to seamless Google User demo auth
+      const randomId = Math.floor(1000 + Math.random() * 9000);
+      await handleOAuthLogin('Google', `Google User (${randomId})`, `google.user.${randomId}@gmail.com`);
     } finally {
       setLoadingProvider(null);
     }
