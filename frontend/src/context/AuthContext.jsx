@@ -1,5 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { authAPI } from '../services/api';
+import { supabase } from '../services/supabaseClient';
+
 
 const AuthContext = createContext(null);
 
@@ -16,24 +18,77 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      authAPI.me()
-        .then((res) => {
-          const u = res.data;
-          setUser(u);
-          localStorage.setItem('user', JSON.stringify(u));
-        })
-        .catch(() => {
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          setUser(null);
-        })
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
+    let isMounted = true;
+
+    async function initAuth() {
+      setLoading(true);
+      try {
+        const token = localStorage.getItem('token');
+        if (token) {
+          try {
+            const res = await authAPI.me();
+            if (isMounted) {
+              const u = res.data;
+              setUser(u);
+              localStorage.setItem('user', JSON.stringify(u));
+            }
+          } catch (err) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            if (isMounted) setUser(null);
+          }
+        } else {
+          // Check for Supabase OAuth callback session on URL redirect
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.user) {
+            const provider = session.user.app_metadata?.provider || 'Google';
+            const name = session.user.user_metadata?.full_name || session.user.user_metadata?.name || 'Google User';
+            const email = session.user.email;
+            if (email) {
+              const res = await authAPI.oauth({ name, email, provider });
+              const backendToken = res.data.access_token;
+              const u = res.data.user;
+              localStorage.setItem('token', backendToken);
+              localStorage.setItem('user', JSON.stringify(u));
+              if (isMounted) setUser(u);
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Auth initialization error:', err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
     }
+
+    initAuth();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user && !localStorage.getItem('token')) {
+        try {
+          const provider = session.user.app_metadata?.provider || 'Google';
+          const name = session.user.user_metadata?.full_name || session.user.user_metadata?.name || 'Google User';
+          const email = session.user.email;
+          if (email) {
+            const res = await authAPI.oauth({ name, email, provider });
+            const backendToken = res.data.access_token;
+            const u = res.data.user;
+            localStorage.setItem('token', backendToken);
+            localStorage.setItem('user', JSON.stringify(u));
+            setUser(u);
+          }
+        } catch (err) {
+          console.error('Supabase OAuth sync error:', err);
+        }
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      authListener?.subscription?.unsubscribe();
+    };
   }, []);
+
 
   const login = async (email, password) => {
     const res = await authAPI.login({ email, password });
