@@ -20,8 +20,8 @@ init_db()
 app = FastAPI(title=settings.app_name, version="1.0.0", description="Secure API for AI Career & Resume Platform.")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origin_list if settings.cors_origins != "*" else ["*"],
-    allow_credentials=True if settings.cors_origins != "*" else False,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
     max_age=600,

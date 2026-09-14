@@ -42,15 +42,35 @@ export default function Login() {
       <div className="auth-card">
         <div style={{ textAlign: 'center', marginBottom: 20 }}>
           <h1 style={{ fontFamily: 'Outfit', fontSize: '1.8rem', marginBottom: 6 }}>Welcome Back</h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: 10 }}>
             Sign in to access your resume analyses and job matches.
           </p>
+          <button
+            type="button"
+            onClick={() => {
+              setEmail('alex.morgan.dev@gmail.com');
+              setPassword('password123');
+            }}
+            style={{
+              fontSize: '0.75rem',
+              fontWeight: 600,
+              padding: '6px 14px',
+              borderRadius: '20px',
+              backgroundColor: '#ecfdf5',
+              color: '#047857',
+              border: '1px solid #a7f3d0',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              transition: 'all 0.2s ease',
+            }}
+          >
+            ⚡ Quick Fill Demo Account
+          </button>
         </div>
 
-        {/* GOOGLE & LINKEDIN OAUTH BUTTONS */}
-        <OAuthButtons onSuccess={() => navigate('/dashboard')} />
-
-        {error && <div className="msg-error">{error}</div>}
+        {error && <div className="msg-error" style={{ marginBottom: 16 }}>{error}</div>}
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
@@ -92,7 +112,10 @@ export default function Login() {
           </Button>
         </form>
 
-        <div className="auth-footer">
+        {/* COMPACT GOOGLE & LINKEDIN OAUTH BUTTONS BELOW FORM */}
+        <OAuthButtons onSuccess={() => navigate('/dashboard')} />
+
+        <div className="auth-footer" style={{ marginTop: 20 }}>
           Don't have an account? <Link to="/register">Create an account</Link>
         </div>
       </div>

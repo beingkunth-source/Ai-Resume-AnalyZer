@@ -80,3 +80,10 @@ def test_builder_endpoints(client):
     assert res_save.status_code == 201
     assert res_save.json()["success"] is True
     assert res_save.json()["data"]["id"] is not None
+
+    # Test export docx API
+    res_docx = client.post("/api/builder/export-docx", json={"template_id": "modern", "personal_info": payload["personal_info"], "summary": payload["summary"], "experience": payload["experience"]})
+    assert res_docx.status_code == 200
+    assert "wordprocessingml" in res_docx.headers["content-type"]
+    assert len(res_docx.content) > 0
+

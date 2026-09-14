@@ -5,6 +5,14 @@ from passlib.context import CryptContext
 
 from app.core.config import get_settings
 
+import bcrypt
+
+# Passlib compatibility patch for bcrypt 4.0+
+if not hasattr(bcrypt, "__about__"):
+    class _About:
+        __version__ = getattr(bcrypt, "__version__", "4.0.0")
+    bcrypt.__about__ = _About()
+
 # bcrypt is deliberately limited to 72 input bytes; passlib handles normal passwords.
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -14,7 +22,15 @@ def hash_password(password: str) -> str:
 
 
 def verify_password(password: str, password_hash: str) -> bool:
-    return pwd_context.verify(password, password_hash)
+    if not password_hash:
+        return False
+    try:
+        return pwd_context.verify(password, password_hash)
+    except Exception:
+        try:
+            return bcrypt.checkpw(password.encode("utf-8"), password_hash.encode("utf-8"))
+        except Exception:
+            return False
 
 
 def create_access_token(subject: str) -> tuple[str, int]:

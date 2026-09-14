@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Menu, LogIn, UserPlus } from 'lucide-react';
+import { Menu, LogIn, UserPlus, Sparkles } from 'lucide-react';
 import Button from './Button';
 
 export default function Navbar({ onToggleSidebar }) {
@@ -18,8 +18,9 @@ export default function Navbar({ onToggleSidebar }) {
           </button>
         )}
         <Link to={user ? '/dashboard' : '/'} style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-          <span style={{ fontFamily: 'Outfit', fontWeight: 800, fontSize: '1.2rem', color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
-            Hire<span style={{ color: 'var(--accent)' }}>Lens</span>
+          <img src="/hirelens-logo.png" alt="HireLens Logo" className="h-8 w-auto object-contain shrink-0" />
+          <span style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: '1.25rem', color: 'var(--text-primary)', letterSpacing: '-0.02em', lineHeight: 1 }}>
+            Hire<span style={{ color: '#059669' }}>Lens</span>
           </span>
         </Link>
       </div>

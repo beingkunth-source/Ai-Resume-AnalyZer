@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://hirelen-api.onrender.com';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -61,6 +61,7 @@ api.interceptors.response.use(
 export const authAPI = {
   register: (data) => api.post('/api/auth/register', data),
   login: (data) => api.post('/api/auth/login', data),
+  oauth: (data) => api.post('/api/auth/oauth', data),
   me: () => api.get('/api/auth/me'),
 };
 
@@ -92,10 +93,65 @@ export const jobsAPI = {
   match: (data) => api.post('/api/jobs/match', data, { timeout: 120000 }),
   getLive: (q = '', location = '') => api.get(`/api/jobs/live?q=${encodeURIComponent(q)}&location=${encodeURIComponent(location)}`),
   importUrl: (url) => api.post('/api/jobs/import-url', { url }),
+  getRecommended: (resumeId, page = 1, limit = 20) => api.get(`/api/jobs/recommended/${resumeId}?page=${page}&limit=${limit}`, { timeout: 60000 }),
+  search: (params = {}) => {
+    const queryParams = new URLSearchParams();
+    if (params.query) queryParams.append('query', params.query);
+    if (params.location) queryParams.append('location', params.location);
+    if (params.experience) queryParams.append('experience', params.experience);
+    if (params.remote !== undefined) queryParams.append('remote', params.remote);
+    if (params.source) queryParams.append('source', params.source);
+    if (params.resumeId) queryParams.append('resume_id', params.resumeId);
+    if (params.minScore) queryParams.append('min_score', params.minScore);
+    if (params.sortBy) queryParams.append('sort_by', params.sortBy);
+    if (params.page) queryParams.append('page', params.page);
+    if (params.limit) queryParams.append('limit', params.limit);
+    return api.get(`/api/jobs/search?${queryParams.toString()}`);
+  },
+  save: (jobId) => api.post(`/api/jobs/${jobId}/save`),
+  unsave: (jobId) => api.delete(`/api/jobs/${jobId}/save`),
+  getSaved: () => api.get('/api/jobs/saved'),
 };
+
+export const applicationsAPI = {
+  track: (data) => api.post('/api/applications', data),
+  getAll: () => api.get('/api/applications'),
+  update: (id, data) => api.patch(`/api/applications/${id}`, data),
+  delete: (id) => api.delete(`/api/applications/${id}`),
+};
+
 
 export const dashboardAPI = {
   get: () => api.get('/api/dashboard'),
+};
+
+export const profileAPI = {
+  get: () => api.get('/api/profile'),
+  update: (data) => api.put('/api/profile', data),
+  getCompletion: () => api.get('/api/profile/completion'),
+  resolveConflicts: (resolutions) => api.post('/api/profile/resolve-conflicts', resolutions),
+};
+
+export const linkedinAPI = {
+  analyze: (payload) => api.post('/api/linkedin/analyze', payload),
+};
+
+export const githubAPI = {
+  analyze: (username_or_url) => api.post('/api/github/analyze', typeof username_or_url === 'string' ? { username_or_url } : username_or_url),
+  getProjects: (username) => api.get(`/api/github/projects?username=${encodeURIComponent(username || '')}`),
+  generateProjectDescription: (payload) => api.post('/api/github/project-description', payload),
+};
+
+export const resumeGeneratorAPI = {
+  generate: (payload) => api.post('/api/builder/generate', payload, { timeout: 120000 }),
+  enrich: (payload) => api.post('/api/builder/enrich-resume', payload),
+  improve: (payload) => api.post('/api/builder/improve', payload),
+  atsCheck: (payload) => api.post('/api/builder/ats-check', payload),
+  getTemplates: () => api.get('/api/templates'),
+  getVersions: () => api.get('/api/builder/versions'),
+  exportDocx: (payload) => api.post('/api/builder/export-docx', payload, { responseType: 'blob' }),
+  exportPdf: (payload) => api.post('/api/builder/export-pdf', payload, { responseType: 'blob' }),
+  saveResume: (payload) => api.post('/api/builder/save-resume', payload),
 };
 
 export const builderAPI = {

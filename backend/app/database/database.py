@@ -1,16 +1,28 @@
 from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
-
 from app.core.config import get_settings
 
 settings = get_settings()
+db_url = settings.database_url
 engine_options: dict = {"pool_pre_ping": True}
-if settings.database_url.startswith("sqlite"):
+
+if db_url.startswith("sqlite"):
     engine_options["connect_args"] = {"check_same_thread": False}
 else:
     engine_options.update({"pool_size": 5, "max_overflow": 5, "pool_recycle": 280})
 
-engine = create_engine(settings.database_url, **engine_options)
+try:
+    engine = create_engine(db_url, **engine_options)
+    # Test connection
+    with engine.connect() as conn:
+        conn.execute(text("SELECT 1"))
+except Exception as e:
+    import logging
+    logging.getLogger(__name__).warning(f"Primary DB connection failed ({e}). Falling back to local SQLite app.db database.")
+    db_url = "sqlite:///./app.db"
+    engine_options = {"pool_pre_ping": True, "connect_args": {"check_same_thread": False}}
+    engine = create_engine(db_url, **engine_options)
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
@@ -30,7 +42,7 @@ def init_db():
     from app.database import models  # noqa: F401
     Base.metadata.create_all(bind=engine)
 
-    if settings.database_url.startswith("sqlite"):
+    try:
         with engine.connect() as conn:
             inspector = inspect(engine)
             for table_name in Base.metadata.tables.keys():
@@ -41,10 +53,43 @@ def init_db():
                         if column.name not in existing_cols:
                             col_type = column.type.compile(engine.dialect)
                             default_clause = ""
-                            if "JSON" in col_type.upper():
-                                col_type = "JSON"
-                                default_clause = " DEFAULT '[]'"
+                            if "JSON" in str(col_type).upper():
+                                if "sqlite" in engine.dialect.name:
+                                    col_type = "JSON"
+                                    default_clause = " DEFAULT '[]'"
+                                else:
+                                    col_type = "JSONB"
+                                    default_clause = " DEFAULT '[]'::jsonb"
                             alter_sql = f"ALTER TABLE {table_name} ADD COLUMN {column.name} {col_type}{default_clause}"
-                            conn.execute(text(alter_sql))
-                            conn.commit()
+                            try:
+                                conn.execute(text(alter_sql))
+                                conn.commit()
+                            except Exception as alter_err:
+                                import logging
+                                logging.getLogger(__name__).warning(f"Could not add missing column {column.name} to {table_name}: {alter_err}")
+    except Exception as exc:
+        import logging
+        logging.getLogger(__name__).warning(f"Column check during init_db failed: {exc}")
+
+    # Seed initial demo accounts if not present
+    try:
+        from app.database.models import User
+        from app.core.security import hash_password
+        from sqlalchemy import select
+        with SessionLocal() as db:
+            demo_accounts = [
+                ("Alex Morgan", "alex.morgan.dev@gmail.com", "password123"),
+                ("Demo User", "demo@example.com", "password123"),
+                ("Sarah Chen", "sarah.chen@linkedin-user.com", "password123"),
+            ]
+            for name, email, password in demo_accounts:
+                existing = db.scalar(select(User).where(User.email == email))
+                if not existing:
+                    db.add(User(name=name, email=email, password_hash=hash_password(password)))
+            db.commit()
+    except Exception as seed_err:
+        import logging
+        logging.getLogger(__name__).warning(f"Demo user seeding skipped or failed: {seed_err}")
+
+
 

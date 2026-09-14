@@ -52,10 +52,7 @@ export default function Register() {
           </p>
         </div>
 
-        {/* GOOGLE & LINKEDIN OAUTH BUTTONS */}
-        <OAuthButtons onSuccess={() => navigate('/dashboard')} />
-
-        {error && <div className="msg-error">{error}</div>}
+        {error && <div className="msg-error" style={{ marginBottom: 16 }}>{error}</div>}
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
@@ -109,7 +106,10 @@ export default function Register() {
           </Button>
         </form>
 
-        <div className="auth-footer">
+        {/* COMPACT GOOGLE & LINKEDIN OAUTH BUTTONS BELOW FORM */}
+        <OAuthButtons onSuccess={() => navigate('/dashboard')} />
+
+        <div className="auth-footer" style={{ marginTop: 20 }}>
           Already have an account? <Link to="/login">Sign in</Link>
         </div>
       </div>

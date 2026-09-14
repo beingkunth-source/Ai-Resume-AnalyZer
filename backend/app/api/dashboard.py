@@ -21,12 +21,21 @@ def dashboard(current_user: User = Depends(get_current_user), db: Session = Depe
     latest_resume = db.scalar(select(Resume).where(Resume.user_id == current_user.id).order_by(Resume.created_at.desc()))
     latest_job_match = db.scalar(select(JobMatch).join(JobMatch.resume).where(JobMatch.resume.has(user_id=current_user.id)).order_by(JobMatch.created_at.desc()))
     recent = db.scalars(select(ResumeAnalysis).where(analysis_filter).order_by(ResumeAnalysis.created_at.desc()).limit(5)).all()
+
+    from app.database.models import LinkedInProfile, GitHubProfile
+    linkedin_record = db.scalar(select(LinkedInProfile).where(LinkedInProfile.user_id == current_user.id).order_by(LinkedInProfile.created_at.desc()))
+    github_record = db.scalar(select(GitHubProfile).where(GitHubProfile.user_id == current_user.id).order_by(GitHubProfile.created_at.desc()))
+
     return success({
-        "total_resumes": total_resumes, "total_analyses": total_analyses,
+        "total_resumes": total_resumes,
+        "total_analyses": total_analyses,
         "latest_resume": {"id": latest_resume.id, "filename": latest_resume.filename} if latest_resume else None,
         "average_score": round(float(average_score), 1) if average_score is not None else None,
         "average_ats_score": round(float(average_ats_score), 1) if average_ats_score is not None else None,
         "latest_score": latest.overall_score if latest else None,
         "latest_job_match_score": latest_job_match.match_score if latest_job_match else None,
+        "linkedin_score": round(float(linkedin_record.overall_score), 1) if linkedin_record and linkedin_record.overall_score else None,
+        "github_score": round(float(github_record.overall_score), 1) if github_record and github_record.overall_score else None,
         "recent_analyses": [{"id": item.id, "resume_id": item.resume_id, "overall_score": item.overall_score, "ats_score": item.ats_score, "created_at": item.created_at.isoformat()} for item in recent],
     })
+

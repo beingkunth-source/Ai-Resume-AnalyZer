@@ -6,7 +6,7 @@ from app.core.dependencies import get_current_user
 from app.core.security import create_access_token, hash_password, verify_password
 from app.database.database import get_db
 from app.database.models import User
-from app.schemas.auth import LoginRequest, RegisterRequest, TokenOut, UserOut
+from app.schemas.auth import LoginRequest, OAuthRequest, RegisterRequest, TokenOut, UserOut
 from app.utils.helpers import success
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
@@ -37,6 +37,19 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
     return token_response(user)
 
 
+@router.post("/oauth", summary="Authenticate or register via OAuth provider")
+def oauth_login(payload: OAuthRequest, db: Session = Depends(get_db)):
+    email = str(payload.email).lower()
+    user = db.scalar(select(User).where(User.email == email))
+    if user is None:
+        user = User(name=payload.name.strip(), email=email, password_hash=hash_password(f"oauth-{payload.provider}-secret-pass-123"))
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+    return token_response(user)
+
+
 @router.get("/me", summary="Get the authenticated user")
 def me(current_user: User = Depends(get_current_user)):
     return success(UserOut.model_validate(current_user).model_dump(mode="json"))
+

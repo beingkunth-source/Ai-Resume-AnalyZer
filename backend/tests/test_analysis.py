@@ -29,7 +29,9 @@ def test_job_matching(client):
     job_id = job.json()["data"]["id"]
     response = client.post("/api/jobs/match", headers=headers, json={"resume_id": resume_id, "job_id": job_id})
     assert response.status_code == 200, response.text
-    assert "python" in response.json()["data"]["matched_skills"]
+    matched = [s.lower() for s in response.json()["data"]["matched_skills"]]
+    assert "python" in matched
+
 
 
 def test_dashboard_empty(client):
