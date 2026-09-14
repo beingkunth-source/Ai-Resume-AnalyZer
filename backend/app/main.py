@@ -20,12 +20,14 @@ init_db()
 app = FastAPI(title=settings.app_name, version="1.0.0", description="Secure API for AI Career & Resume Platform.")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000", "http://127.0.0.1:3000", "*"],
+    allow_origin_regex=r"https?://.*",
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
     max_age=600,
 )
+
 
 
 @app.exception_handler(StarletteHTTPException)

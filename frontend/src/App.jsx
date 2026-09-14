@@ -24,8 +24,8 @@ import UserProfile from './pages/UserProfile';
 import LinkedInAnalyzer from './pages/LinkedInAnalyzer';
 import GitHubAnalyzer from './pages/GitHubAnalyzer';
 import ResumeGenerator from './pages/ResumeGenerator';
-import ResumeVersions from './pages/ResumeVersions';
 import NotFound from './pages/NotFound';
+
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -85,7 +85,6 @@ function LayoutShell() {
             <Route path="/github" element={<ProtectedRoute><GitHubAnalyzer /></ProtectedRoute>} />
             <Route path="/resume-generator" element={<ProtectedRoute><ResumeGenerator /></ProtectedRoute>} />
             <Route path="/builder" element={<ProtectedRoute><ResumeGenerator /></ProtectedRoute>} />
-            <Route path="/versions" element={<ProtectedRoute><ResumeVersions /></ProtectedRoute>} />
             <Route path="/resumes" element={<ProtectedRoute><Resumes /></ProtectedRoute>} />
             <Route path="/upload" element={<ProtectedRoute><UploadResume /></ProtectedRoute>} />
             <Route path="/analysis/:resumeId" element={<ProtectedRoute><Analysis /></ProtectedRoute>} />

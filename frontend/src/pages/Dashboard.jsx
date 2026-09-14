@@ -18,7 +18,6 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [dashData, setDashData] = useState(null);
   const [profile, setProfile] = useState(null);
-  const [completion, setCompletion] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -29,15 +28,13 @@ export default function Dashboard() {
   const loadDashboard = async () => {
     setLoading(true);
     try {
-      const [dashRes, profRes, compRes] = await Promise.all([
+      const [dashRes, profRes] = await Promise.all([
         dashboardAPI.get().catch(() => ({ data: {} })),
         profileAPI.get().catch(() => null),
-        profileAPI.getCompletion().catch(() => ({ completion_percentage: 0 })),
       ]);
 
       setDashData(dashRes.data || dashRes || {});
       setProfile(profRes);
-      setCompletion(compRes);
     } catch (err) {
       setError(err.message || 'Failed to load dashboard data.');
     } finally {
@@ -48,7 +45,6 @@ export default function Dashboard() {
   if (loading) return <LoadingState type="page" />;
 
   const firstName = profile?.first_name || 'Professional';
-  const profileScore = completion?.completion_percentage ?? completion?.completion_score ?? 0;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-8 animate-fade-in">
@@ -61,7 +57,7 @@ export default function Dashboard() {
           </div>
           <h1 className="text-3xl font-extrabold text-slate-900">Good morning, {firstName}</h1>
           <p className="text-slate-500 text-sm">
-            Welcome to your AI Career Hub. Explore job matches & resume tools below.
+            Welcome to your AI Career Hub. Access personalized job matches & AI resume tools below.
           </p>
         </div>
       </div>

@@ -60,9 +60,10 @@ async def validate_upload(file: UploadFile) -> ValidatedFile:
         raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail="File exceeds upload size limit")
 
     if suffix == ".pdf":
-        is_pdf_header = content.startswith(b"%PDF-") or b"%PDF-" in content[:1024]
-        if not is_pdf_header and content_type not in ALLOWED_MIME_TYPES[".pdf"]:
+        is_pdf_header = content.startswith(b"%PDF-") or b"%PDF-" in content[:4096]
+        if not is_pdf_header and content_type not in ALLOWED_MIME_TYPES[".pdf"] and not content_type.startswith("application/"):
             raise HTTPException(status_code=400, detail="File content is not a valid PDF")
+
     elif suffix == ".docx":
         is_docx_header = content.startswith(b"PK\x03\x04")
         if not is_docx_header and content_type not in ALLOWED_MIME_TYPES[".docx"]:
