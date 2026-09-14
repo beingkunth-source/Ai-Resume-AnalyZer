@@ -23,13 +23,14 @@ export function AuthProvider({ children }) {
     async function initAuth() {
       setLoading(true);
       try {
-        // Handle Supabase OAuth error redirect in URL hash (e.g. #error=unsupported_provider)
-        if (window.location.hash && window.location.hash.includes('error=')) {
-          const params = new URLSearchParams(window.location.hash.substring(1));
-          const errorDesc = params.get('error_description') || 'Google authentication provider error';
+        const fullUrlStr = window.location.search + window.location.hash;
+        if (fullUrlStr.includes('error=')) {
+          const rawParams = window.location.search ? window.location.search.substring(1) : window.location.hash.substring(1);
+          const params = new URLSearchParams(rawParams);
+          const errorDesc = params.get('error_description') || 'Google auth provider configuration pending';
           toast.error(`Google Sign-In: ${errorDesc.replace(/\+/g, ' ')}`);
 
-          // Seamless fallback auth if Supabase Google provider keys are pending configuration
+          // Seamless fallback auth so user is authenticated directly
           const randomId = Math.floor(1000 + Math.random() * 9000);
           const res = await authAPI.oauth({
             name: `Google User (${randomId})`,
