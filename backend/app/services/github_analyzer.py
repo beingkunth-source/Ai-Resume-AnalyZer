@@ -170,10 +170,14 @@ def generate_github_project_bullet(name: str, description: str, language: str | 
 
 
 def _extract_github_username(url_or_name: str) -> str:
-    cleaned = url_or_name.strip()
+    cleaned = url_or_name.strip().strip("/")
     if "github.com/" in cleaned:
         parsed = urllib.parse.urlparse(cleaned)
         parts = [p for p in parsed.path.split("/") if p]
         if parts:
             return parts[0]
+    
+    parts = [p for p in cleaned.split("/") if p and p not in ("https:", "http:", "github.com", "www.github.com")]
+    if parts:
+        return parts[0].replace("@", "")
     return cleaned.replace("@", "")

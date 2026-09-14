@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { linkedinAPI } from '../services/api';
+import React, { useState, useEffect } from 'react';
+import { linkedinAPI, profileAPI } from '../services/api';
 import {
   SparklesIcon,
   ClipboardDocumentIcon,
@@ -17,6 +17,22 @@ export default function LinkedInAnalyzer() {
 
   const [copiedField, setCopiedField] = useState(null);
 
+  useEffect(() => {
+    loadSavedProfile();
+  }, []);
+
+  const loadSavedProfile = async () => {
+    try {
+      const res = await profileAPI.get();
+      const prof = res?.data || res;
+      if (prof?.linkedin_url) {
+        setProfileUrl(prof.linkedin_url);
+      }
+    } catch (err) {
+      // Ignore initial load error
+    }
+  };
+
   const handleAnalyze = async (e) => {
     e.preventDefault();
     if (!profileUrl.trim() && !profileText.trim()) {
@@ -31,7 +47,8 @@ export default function LinkedInAnalyzer() {
         profile_url: profileUrl,
         profile_text: profileText,
       });
-      setAnalysis(res);
+      const data = res?.data || res;
+      setAnalysis(data);
     } catch (err) {
       setError(err.message || 'LinkedIn analysis failed. Please try again.');
     } finally {

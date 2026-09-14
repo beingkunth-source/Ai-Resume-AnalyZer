@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { githubAPI } from '../services/api';
 import {
   CodeBracketIcon,
@@ -20,6 +20,23 @@ export default function GitHubAnalyzer() {
   const [generatedDescriptions, setGeneratedDescriptions] = useState({});
   const [generatingDescs, setGeneratingDescs] = useState(false);
 
+  useEffect(() => {
+    loadSavedProfile();
+  }, []);
+
+  const loadSavedProfile = async () => {
+    try {
+      const res = await githubAPI.getProjects();
+      const data = res?.data || res;
+      if (data && (data.github_username || data.username)) {
+        setAnalysis(data);
+        setInputVal(data.github_username || data.username);
+      }
+    } catch (err) {
+      // Ignore initial load error
+    }
+  };
+
   const handleAnalyze = async (e) => {
     e.preventDefault();
     if (!inputVal.trim()) {
@@ -31,7 +48,8 @@ export default function GitHubAnalyzer() {
     setError('');
     try {
       const res = await githubAPI.analyze(inputVal.trim());
-      setAnalysis(res);
+      const data = res?.data || res;
+      setAnalysis(data);
       setSelectedProjects([]);
       setGeneratedDescriptions({});
     } catch (err) {
