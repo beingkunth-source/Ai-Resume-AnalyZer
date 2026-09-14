@@ -24,7 +24,7 @@ export default function LiveJobBoard() {
     jobsAPI
       .getLive(query, loc)
       .then((res) => setJobs(res.data || []))
-      .catch(() => toast.error('Could not refresh live jobs feed'))
+      .catch((err) => console.warn('Could not refresh live jobs feed:', err))
       .finally(() => setLoading(false));
   };
 
