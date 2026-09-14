@@ -46,15 +46,6 @@ export default function Sidebar({ isOpen, onClose }) {
           <span>Dashboard</span>
         </NavLink>
 
-        <NavLink
-          to="/profile"
-          className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
-          onClick={onClose}
-        >
-          <UserCheck size={18} />
-          <span>My AI Profile</span>
-        </NavLink>
-
         <div className="sidebar-section-title">Resume Studio</div>
         <NavLink
           to="/resume-generator"
@@ -66,15 +57,6 @@ export default function Sidebar({ isOpen, onClose }) {
         </NavLink>
 
         <NavLink
-          to="/versions"
-          className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
-          onClick={onClose}
-        >
-          <Layers size={18} />
-          <span>Resume Versions</span>
-        </NavLink>
-
-        <NavLink
           to="/upload"
           className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
           onClick={onClose}
@@ -82,6 +64,7 @@ export default function Sidebar({ isOpen, onClose }) {
           <UploadCloud size={18} />
           <span>Upload & Analyze</span>
         </NavLink>
+
 
         <div className="sidebar-section-title">Integrations & Branding</div>
         <NavLink

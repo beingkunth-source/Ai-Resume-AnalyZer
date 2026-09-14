@@ -37,6 +37,125 @@ const TEMPLATES = [
   { id: 'academic', name: 'Academic', desc: 'CV style layout for research, publications, and education', ats: true },
 ];
 
+function TemplateMiniPreview({ id, accentColor = '#059669' }) {
+  if (id === 'classic') {
+    return (
+      <div className="h-28 bg-white rounded-lg border border-slate-200 p-2 space-y-1 flex flex-col justify-between overflow-hidden text-[9px]">
+        <div className="text-center pb-1 border-b-2 border-slate-300">
+          <div className="font-extrabold text-slate-900 text-[10px]">ALEX MORGAN</div>
+          <div className="text-slate-500 text-[7px]">Senior Software Engineer • NYC</div>
+        </div>
+        <div className="space-y-1">
+          <div className="font-bold text-slate-700 uppercase tracking-wider text-[7px] border-b border-slate-200">Work Experience</div>
+          <div className="h-1.5 bg-slate-200 rounded w-full" />
+          <div className="h-1.5 bg-slate-200 rounded w-4/5" />
+        </div>
+        <div className="space-y-1">
+          <div className="font-bold text-slate-700 uppercase tracking-wider text-[7px] border-b border-slate-200">Education</div>
+          <div className="h-1.5 bg-slate-200 rounded w-3/4" />
+        </div>
+      </div>
+    );
+  }
+
+  if (id === 'modern') {
+    return (
+      <div className="h-28 bg-white rounded-lg border border-slate-200 overflow-hidden flex flex-col justify-between text-[9px]">
+        <div className="p-2 text-white space-y-0.5" style={{ backgroundColor: accentColor }}>
+          <div className="font-extrabold text-[10px]">SARAH CHEN</div>
+          <div className="text-[7px] opacity-90">Lead Frontend Architect</div>
+        </div>
+        <div className="p-2 space-y-1 flex-1 bg-slate-50/50">
+          <div className="space-y-1">
+            <div className="font-bold text-[7px] uppercase" style={{ color: accentColor }}>Summary</div>
+            <div className="h-1.5 bg-slate-200 rounded w-full" />
+          </div>
+          <div className="space-y-1">
+            <div className="font-bold text-[7px] uppercase" style={{ color: accentColor }}>Skills & Stack</div>
+            <div className="flex gap-1">
+              <span className="w-4 h-1 bg-slate-300 rounded" />
+              <span className="w-5 h-1 bg-slate-300 rounded" />
+              <span className="w-4 h-1 bg-slate-300 rounded" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (id === 'minimal') {
+    return (
+      <div className="h-28 bg-white rounded-lg border border-slate-200 p-2 space-y-1.5 flex flex-col justify-between text-[9px]">
+        <div className="space-y-0.5">
+          <div className="font-black text-slate-900 text-[10px] tracking-tight">DAVID KIM</div>
+          <div className="text-slate-400 text-[7px]">david@kim.dev</div>
+        </div>
+        <div className="space-y-1 pl-1.5 border-l-2" style={{ borderColor: accentColor }}>
+          <div className="h-1.5 bg-slate-200 rounded w-full" />
+          <div className="h-1.5 bg-slate-200 rounded w-3/4" />
+        </div>
+        <div className="flex gap-1 text-[7px]">
+          <span className="px-1 bg-slate-100 rounded text-slate-600">Python</span>
+          <span className="px-1 bg-slate-100 rounded text-slate-600">AWS</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (id === 'tech') {
+    return (
+      <div className="h-28 bg-white rounded-lg border border-slate-200 p-1.5 grid grid-cols-3 gap-1 text-[8px]">
+        <div className="col-span-1 p-1 bg-slate-100 rounded space-y-1 flex flex-col justify-between">
+          <div>
+            <div className="font-extrabold text-[8px] text-slate-800">TECH STACK</div>
+            <div className="h-1 bg-slate-300 rounded w-full mt-1" />
+            <div className="h-1 bg-slate-300 rounded w-3/4 mt-0.5" />
+          </div>
+          <div className="text-[6px] text-slate-400">GitHub Verified</div>
+        </div>
+        <div className="col-span-2 p-1 space-y-1 flex flex-col justify-between">
+          <div className="font-bold text-[7px] uppercase" style={{ color: accentColor }}>Projects & Architecture</div>
+          <div className="h-1.5 bg-slate-200 rounded w-full" />
+          <div className="h-1.5 bg-slate-200 rounded w-4/5" />
+        </div>
+      </div>
+    );
+  }
+
+  if (id === 'executive') {
+    return (
+      <div className="h-28 bg-white rounded-lg border border-slate-200 p-1.5 space-y-1 flex flex-col justify-between text-[9px]">
+        <div className="p-1 rounded flex items-center justify-between text-white" style={{ backgroundColor: accentColor }}>
+          <div>
+            <div className="font-black text-[9px]">MICHAEL VANCE</div>
+            <div className="text-[7px] opacity-90">VP Engineering</div>
+          </div>
+        </div>
+        <div className="space-y-1">
+          <div className="font-bold text-[7px] uppercase text-slate-700">Executive Impact</div>
+          <div className="h-1.5 bg-slate-200 rounded w-full" />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-28 bg-white rounded-lg border border-slate-200 p-2 space-y-1.5 flex flex-col justify-between text-[9px]">
+      <div className="pb-1 border-b border-slate-200 flex justify-between items-center">
+        <div>
+          <div className="font-bold text-slate-800 text-[9px]">CANDIDATE NAME</div>
+          <div className="text-slate-400 text-[7px]">Target Title</div>
+        </div>
+        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: accentColor }} />
+      </div>
+      <div className="space-y-1">
+        <div className="h-1.5 bg-slate-200 rounded w-full" />
+        <div className="h-1.5 bg-slate-200 rounded w-4/5" />
+      </div>
+    </div>
+  );
+}
+
 export default function ResumeGenerator() {
   const [activeStep, setActiveStep] = useState(1); // 1: Goal, 2: Template, 3: Editor & Preview
   const [goal, setGoal] = useState('General Resume');
@@ -426,8 +545,8 @@ export default function ResumeGenerator() {
                   onClick={() => setSelectedTemplate(tmpl.id)}
                   className={`p-5 rounded-2xl border cursor-pointer transition-all space-y-3 ${
                     isSelected
-                      ? 'border-emerald-500 bg-emerald-50/50 ring-2 ring-emerald-500 shadow-md'
-                      : 'border-slate-200 bg-white hover:border-slate-300'
+                      ? 'border-emerald-500 bg-emerald-50/50 ring-2 ring-emerald-500 shadow-md scale-[1.02]'
+                      : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm'
                   }`}
                 >
                   <div className="flex items-center justify-between">
@@ -439,9 +558,9 @@ export default function ResumeGenerator() {
                     )}
                   </div>
                   <p className="text-xs text-slate-500 line-clamp-2">{tmpl.desc}</p>
-                  <div className="h-28 bg-slate-100 rounded-lg border border-slate-200 flex items-center justify-center text-xs text-slate-400 font-mono">
-                    [{tmpl.name} Preview]
-                  </div>
+                  
+                  {/* Real visual mini layout card */}
+                  <TemplateMiniPreview id={tmpl.id} accentColor={accentColor} />
                 </div>
               );
             })}
