@@ -342,7 +342,22 @@ async def export_docx(payload: ExportDocxRequest):
 
 @router.post("/export-pdf", summary="Export built resume as a PDF file")
 async def export_pdf(payload: ExportDocxRequest):
-    return await export_docx(payload)
+    from app.services.pdf_export_service import generate_pdf_resume
+
+    export_payload = payload.resume_content or payload.model_dump(mode="json")
+    file_path = await run_in_threadpool(
+        generate_pdf_resume,
+        export_payload,
+        payload.template_id,
+        payload.primary_color,
+    )
+
+    filename = os.path.basename(file_path)
+    return FileResponse(
+        file_path,
+        media_type="application/pdf",
+        filename=filename,
+    )
 
 
 @router.get("/download-docx/{filename}", summary="Download generated DOCX resume file")
