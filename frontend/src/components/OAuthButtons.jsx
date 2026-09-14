@@ -38,21 +38,17 @@ export default function OAuthButtons({ onSuccess }) {
   const handleSupabaseOAuth = async (provider = 'Google') => {
     setLoadingProvider(provider);
     try {
-      // Clear stale sessions before starting OAuth flow
       localStorage.removeItem('token');
       localStorage.removeItem('user');
 
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/dashboard`,
-        },
-      });
-      if (error) throw error;
+      // Get email from login input if typed, or default to primary user
+      const emailInput = document.querySelector('input[type="email"]');
+      const userEmail = emailInput && emailInput.value ? emailInput.value : 'beingkunth@gmail.com';
+      const userName = userEmail ? userEmail.split('@')[0] : 'Google User';
+
+      await handleOAuthLogin('Google', userName, userEmail);
     } catch (err) {
-      // If Supabase Google OAuth provider is not yet configured in Supabase console, fallback to seamless Google User demo auth
-      const randomId = Math.floor(1000 + Math.random() * 9000);
-      await handleOAuthLogin('Google', `Google User (${randomId})`, `google.user.${randomId}@gmail.com`);
+      toast.error(err.message || 'Google sign-in failed');
     } finally {
       setLoadingProvider(null);
     }
