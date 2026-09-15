@@ -72,17 +72,41 @@ If an API key is un-configured or temporarily unavailable, HireLens automaticall
 
 ## 📸 Visual Showcase & Screenshots
 
-### 1. SaaS Analytics Dashboard
-Monitor resume evaluation history, track score trends, view ATS score distributions, and trigger instant upload analyses.
-![SaaS Dashboard Preview](./docs/images/dashboard-preview.png)
+### 1. Landing Page & Real-Time Scanner Preview
+Hero section with instant ATS rule check and live vacancy preview.
+![Landing Page](./docs/images/01-landing-page.png)
 
-### 2. AI Resume Analysis & Actionable Recommendations
-Detailed breakdown featuring ATS compliance status, score sliders, identified skills, and side-by-side Before vs. After bullet point rephrasings.
-![AI Analysis Breakdown](./docs/images/analysis-breakdown.png)
+### 2. AI Career Hub Dashboard
+Central command center tracking Resume Quality Score, ATS Readiness, LinkedIn Branding score, and GitHub Code Score.
+![SaaS Dashboard Preview](./docs/images/02-dashboard.png)
 
-### 3. Job Matcher & Skill Gap Analysis
-Compare candidate resumes directly against targeted job descriptions to uncover matched skills, missing skills, and tailored suggestions.
-![Job Matcher Preview](./docs/images/job-matcher-preview.png)
+### 3. AI Resume Builder — 10 Original ATS Templates
+Select from 10 original ATS-friendly layouts (Modern, Minimal, Tech, Executive, Classic, Professional, Creative, Student, etc.).
+![Resume Builder Templates](./docs/images/03-resume-builder-templates.png)
+
+### 4. AI Resume Builder — Live Editor & Vector PDF Export
+Form-based live editing, AI content expansion, real-time paper rendering, and vector PDF/DOCX downloads.
+![Resume Builder Editor](./docs/images/04-resume-builder-editor.png)
+
+### 5. Upload Resume & Instant ATS Audit
+Drag-and-drop document parser supporting PDF & DOCX up to 5MB with automated rule scoring.
+![Upload Resume](./docs/images/05-upload-resume.png)
+
+### 6. LinkedIn Branding & Keywords Audit
+Privacy-compliant LinkedIn profile optimizer evaluating headlines, about sections, and recruiter keyword density.
+![LinkedIn Optimizer](./docs/images/06-linkedin-optimizer.png)
+
+### 7. GitHub Profile & Project Importer
+Analyze public GitHub repositories, primary language distributions, and generate resume-ready project descriptions.
+![GitHub Importer](./docs/images/07-github-importer.png)
+
+### 8. Live Job Search & Discovery
+Multi-source search engine aggregating vacancies across Naukri, LinkedIn, Indeed, and Remotive with resume match filters.
+![Job Search & Discovery](./docs/images/08-job-discovery.png)
+
+### 9. Personalized Recommended Jobs Engine
+Hybrid matching algorithm scoring live job openings against the candidate's actual resume profile.
+![Recommended Jobs](./docs/images/09-recommended-jobs.png)
 
 ---
 
