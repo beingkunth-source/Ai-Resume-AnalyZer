@@ -17,7 +17,7 @@
 
 <br />
 
-![HireLens Hero Banner](./docs/images/hero-banner.png)
+![HireLens Hero Banner](./docs/images/01-landing-page.png)
 
 </div>
 
