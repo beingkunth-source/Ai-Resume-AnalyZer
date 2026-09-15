@@ -36,7 +36,8 @@ export default function JobRecommended() {
     try {
       setLoading(true);
       const res = await resumeAPI.list();
-      const list = res.data || [];
+      const rawPayload = res?.data?.data || res?.data || res;
+      const list = Array.isArray(rawPayload) ? rawPayload : (rawPayload?.data || []);
       setResumes(list);
       if (list.length > 0) {
         setSelectedResumeId(list[0].id);
@@ -54,7 +55,8 @@ export default function JobRecommended() {
     setError(null);
     try {
       const response = await jobsAPI.getRecommended(resumeId, targetPage, 20);
-      setRecommendationsData(response.data);
+      const dataPayload = response?.data?.data || response?.data || response;
+      setRecommendationsData(dataPayload);
       setPage(targetPage);
     } catch (err) {
       setError(err.message || "Failed to load personalized job recommendations.");

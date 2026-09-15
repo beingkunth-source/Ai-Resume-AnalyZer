@@ -34,7 +34,8 @@ export default function JobSearch() {
   const fetchResumes = async () => {
     try {
       const res = await resumeAPI.list();
-      const list = res.data || [];
+      const rawPayload = res?.data?.data || res?.data || res;
+      const list = Array.isArray(rawPayload) ? rawPayload : (rawPayload?.data || []);
       setResumes(list);
       if (list.length > 0) {
         setSelectedResumeId(list[0].id);
@@ -64,7 +65,8 @@ export default function JobSearch() {
         page: targetPage,
         limit: 20,
       });
-      setResultsData(response.data);
+      const dataPayload = response?.data?.data || response?.data || response;
+      setResultsData(dataPayload);
       setPage(targetPage);
     } catch (err) {
       setError(err.message || "Failed to search job listings.");

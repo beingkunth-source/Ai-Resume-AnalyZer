@@ -93,13 +93,40 @@ async def get_recommended_jobs(
         limit=50,
     )
 
-    # 3. Score Jobs using Hybrid Matcher
+    # 3. Score Jobs using Fast Hybrid Matcher
     scored_jobs = []
     saved_job_ids = set(db.scalars(select(SavedJob.job_id).where(SavedJob.user_id == current_user.id)).all())
     app_statuses = {app.job_id: app.status for app in db.scalars(select(Application).where(Application.user_id == current_user.id)).all()}
 
     for raw_job in raw_jobs:
-        job_db = _get_or_create_job_db(raw_job, db)
+        ext_id = str(raw_job.get("external_id") or raw_job.get("id"))
+        source = str(raw_job.get("source", "Generic"))
+
+        existing = db.scalar(
+            select(Job).where(Job.source == source, Job.external_id == ext_id)
+        )
+        if existing:
+            job_db_id = existing.id
+        else:
+            job_db = Job(
+                external_id=ext_id,
+                source=source,
+                title=raw_job.get("title", "Software Developer"),
+                company=raw_job.get("company", "Tech Company"),
+                location=raw_job.get("location", "Remote"),
+                employment_type=raw_job.get("employment_type", "Full-time"),
+                experience_required=raw_job.get("experience_required"),
+                salary=raw_job.get("salary"),
+                description=raw_job.get("description", ""),
+                skills=raw_job.get("skills", []),
+                url=raw_job.get("url", "https://naukri.com"),
+                posted_at=raw_job.get("posted_at"),
+                source_logo=raw_job.get("source_logo"),
+            )
+            db.add(job_db)
+            db.flush()
+            job_db_id = job_db.id
+
         match_res = await run_in_threadpool(
             calculate_hybrid_job_match,
             resume.raw_text,
@@ -111,30 +138,20 @@ async def get_recommended_jobs(
         if match_res["match_score"] >= 50 or len(raw_jobs) <= 5:
             scored_jobs.append({
                 "job": raw_job,
-                "job_db_id": job_db.id,
+                "job_db_id": job_db_id,
                 "match_score": match_res["match_score"],
                 "category": match_res["category"],
                 "matched_skills": match_res["matched_skills"],
                 "missing_skills": match_res["missing_skills"],
                 "explanation": match_res["explanation"],
-                "is_saved": job_db.id in saved_job_ids,
-                "application_status": app_statuses.get(job_db.id),
+                "is_saved": job_db_id in saved_job_ids,
+                "application_status": app_statuses.get(job_db_id),
             })
+
+    db.commit()
 
     # 4. Sort by Match Score Descending
     scored_jobs.sort(key=lambda x: x["match_score"], reverse=True)
-
-    # Generate AI rationale for top 5 jobs
-    for item in scored_jobs[:5]:
-        ai_match = await run_in_threadpool(
-            calculate_hybrid_job_match,
-            resume.raw_text,
-            item["job"],
-            candidate_profile,
-            True,
-        )
-        if ai_match.get("explanation"):
-            item["explanation"] = ai_match["explanation"]
 
     # Pagination slice
     start_idx = (page - 1) * limit

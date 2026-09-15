@@ -39,10 +39,15 @@ export default function JobMatch() {
   const loadInitialData = async () => {
     try {
       const [resumesRes, jobsRes] = await Promise.all([resumeAPI.list(), jobsAPI.list()]);
-      setResumes(resumesRes.data);
-      setJobs(jobsRes.data);
-      if (resumesRes.data.length > 0 && !resumeId) setResumeId(resumesRes.data[0].id);
-      if (jobsRes.data.length > 0 && !jobId) setJobId(jobsRes.data[0].id);
+      const resPayload = resumesRes?.data?.data || resumesRes?.data || resumesRes;
+      const resumesList = Array.isArray(resPayload) ? resPayload : (resPayload?.data || []);
+      const jobsPayload = jobsRes?.data?.data || jobsRes?.data || jobsRes;
+      const jobsList = Array.isArray(jobsPayload) ? jobsPayload : (jobsPayload?.data || []);
+
+      setResumes(resumesList);
+      setJobs(jobsList);
+      if (resumesList.length > 0 && !resumeId) setResumeId(resumesList[0].id);
+      if (jobsList.length > 0 && !jobId) setJobId(jobsList[0].id);
     } catch (err) {
       toast.error('Failed to load data for matching');
     } finally {
@@ -63,9 +68,10 @@ export default function JobMatch() {
     setCreatingJob(true);
     try {
       const res = await jobsAPI.create({ title: newTitle, company: newCompany, description: newDesc });
+      const createdJob = res?.data?.data || res?.data || res;
       toast.success('Job description created!');
-      setJobs((prev) => [res.data, ...prev]);
-      setJobId(res.data.id);
+      setJobs((prev) => [createdJob, ...prev]);
+      setJobId(createdJob.id);
       setShowCreateJob(false);
       setNewTitle('');
       setNewCompany('');
@@ -86,7 +92,8 @@ export default function JobMatch() {
     setMatching(true);
     try {
       const res = await jobsAPI.match({ resume_id: parseInt(resumeId), job_id: parseInt(jobId) });
-      setMatchResult(res.data);
+      const matchData = res?.data?.data || res?.data || res;
+      setMatchResult(matchData);
       toast.success('Job match calculation complete!');
     } catch (err) {
       toast.error(err.message || 'Matching failed');

@@ -17,7 +17,9 @@ export default function SavedJobs() {
     setError(null);
     try {
       const res = await jobsAPI.getSaved();
-      setSavedJobs(res.data || []);
+      const rawPayload = res?.data?.data || res?.data || res;
+      const list = Array.isArray(rawPayload) ? rawPayload : (rawPayload?.data || []);
+      setSavedJobs(list);
     } catch (err) {
       setError(err.message || "Failed to load saved jobs.");
     } finally {
